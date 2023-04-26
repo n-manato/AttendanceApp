@@ -1,0 +1,12 @@
+<html>
+<head></head>
+<body>
+    {%for obj in object%}
+        <li>{{obj.attendance}}</li> 
+    {%endfor%}
+    <form method="POST">{% csrf_token %}
+    <input type="text" name="Student.name" maxlength="10"></br>
+    <button type="submit">情報を追加する</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<html>
+<head></head>
+<body>
+    <form action="" method="POST">{% csrf_token %}
+    {% for e in form %}
+        {{ form.as_table }}
+    {% endfor %}    
+        <button type="submit">情報を追加する</button>
+    </form>
+</body>
+</html>

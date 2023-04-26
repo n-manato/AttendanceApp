@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import Student,Teacher,AttendanceInfo
+from .models import Student,Teacher,AttendanceInfo,Attend
 
 admin.site.register(Teacher)
-admin.site.register(Student)#親
+admin.site.register(Student)
+admin.site.register(Attend)
 
 class AttendanceInfoAdmin(admin.ModelAdmin):
     readonly_fields = ("date",)
