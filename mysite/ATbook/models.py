@@ -27,9 +27,9 @@ class Attend(models.Model):
 
 #出席情報
 class AttendanceInfo(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True)
-    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True)
-    attendance = models.ForeignKey(Attend, on_delete=models.SET_NULL, null=True)
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, related_name='related_student')
+    teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, related_name='related_teacher')
+    attendance = models.ForeignKey(Attend, on_delete=models.SET_NULL, null=True, related_name='related_attendance')
     date = models.DateField(default=timezone.now)
     def __str__(self):
         return self.student.name

@@ -5,13 +5,23 @@ from django.views.generic import ListView,CreateView
 from django.urls import reverse_lazy
 
 def index(request):
+
     context = {"name":Student.objects.all()}
     return render(request,"ATbook/index.html",context)
 
 class home(ListView):
-    model = Student
+    model = AttendanceInfo
     template_name = "ATbook/home.html"
-    context_object_name = "home"
+    context_object_name = "daily_list"
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['tag_list'] = Student.objects.all
+        return context
+
+
+
+
+
 
 class AttendView(CreateView):
     template_name = 'ATbook/create.html'
@@ -26,8 +36,4 @@ class AttendView(CreateView):
 def Attend_def(request):
     object = AttendanceInfo.objects.all()
     context = {'object': object}
-    if request.method == 'POST':
-        object.text = request.POST['Student.name']
-        AttendanceInfo.objects.update_or_create(defaults={"Student.name":"null"})
-    else:
-        return render(request, 'ATbook/Attenddef.html', context)
+    return render(request, 'ATbook/Attenddef.html', context)
