@@ -2,10 +2,10 @@
 <head></head>
 
 <body>
-    {% for tag in tag_list %}
+    {% for tag in student_list %}
         <li>{{ tag.number }},{{tag.name}}{{post_list.name}}</li>
     {% endfor %}
-    {% for p in daily_list %}
+    {% for p in attendance_list %}
         <li>{{p.attendance}},{{p.teacher}},{{p.student}}</li>
     {% endfor %}
     <table border="1">
@@ -16,23 +16,21 @@
       <th>Teacher</th>
       <th>Attendance</th>
     </tr>
-    {% for p in daily_list %} 
-       {% for tag in tag_list %}
-            {%if {{p.student}} == {{tag.name}}%}
-        <tr>
-            <td>{{p.student}}</td>
-            <td>{{p.teacher}}</td>
-            <td>{{p.attendance}}</td>
-        </tr>
+    <tr>
+    {% for tag in student_list %}
+        <td>{{tag.name}}</td>
+        <td>{{attendance_list[forloop.counter]}}</td>
+        {% for p in attendance_list %} 
+            {% if p.student|stringformat:"s" == tag.name|stringformat:"s" %}
+                <td>{{p.teacher}}</td>
+                <td>{{p.attendance}}</td>        
             {% else %}
-            <tr>
-            <td>{{p.student}}</td>
-            <td>{{p.teacher}}</td>
-            <td>出席</td>
-        </tr>
         {% endif %}
         {% endfor %}
+
+    </tr>
     {% endfor %}
+  
     </table>
     
 </body>

@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from .models import Student,AttendanceInfo
 from django.views.generic import ListView,CreateView
 from django.urls import reverse_lazy
+import json
 
 def index(request):
 
@@ -12,10 +13,10 @@ def index(request):
 class home(ListView):
     model = AttendanceInfo
     template_name = "ATbook/home.html"
-    context_object_name = "daily_list"
+    context_object_name = "attendance_list"
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['tag_list'] = Student.objects.all
+        context['student_list'] = Student.objects.all
         return context
 
 
@@ -36,4 +37,4 @@ class AttendView(CreateView):
 def Attend_def(request):
     object = AttendanceInfo.objects.all()
     context = {'object': object}
-    return render(request, 'ATbook/Attenddef.html', context)
+    return render(request, 'ATbook/Attenddef.html', {'data_json': json.dumps(context)})

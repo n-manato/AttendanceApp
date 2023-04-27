@@ -1,14 +1,14 @@
 <html>
 <head></head>
 <body>
-    {%for obj in object.related_student.all%}
-        <li>{{obj.student.name}}</li> 
-    {%endfor%}
     
-    <li>{{object.related_student}}</li>
-    <form method="POST">{% csrf_token %}
-    <input type="text" name="Student" maxlength="10"></br>
-    <button type="submit">情報を追加する</button>
-    </form>
+
+
+    <scrip type="text/javascript">
+        const data = JSON.parse('{{ data_json|safe }}');
+        console.log(data.sample1);
+    </script>
+
+    
 </body>
 </html>
