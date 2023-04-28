@@ -1,38 +1,116 @@
 <!doctype html>
 <head></head>
+<title>Document</title>
+<body id = "body">
 
-<body>
-    {% for tag in student_list %}
-        <li>{{ tag.number }},{{tag.name}}{{post_list.name}}</li>
+ <script type="text/javascript">
+    var student_name = [];
+    var student_number = [];
+    var v = 0;
+    {% for member in student_list %}
+    student_name[v] = ("{{ member.name|safe }}");
+    student_number[v] = ("{{ member.number|safe }}");
+    v++;
     {% endfor %}
-    {% for p in attendance_list %}
-        <li>{{p.attendance}},{{p.teacher}},{{p.student}}</li>
+    console.log(student_name)
+    console.log(student_number)
+
+    var teacher = [];
+    var student = [];
+    var attendance = []
+    v=0;
+    {% for d in attendance_list %}
+    attendance[v]=("{{ d.attendance|safe }}");
+    teacher[v]=("{{ d.teacher|safe }}");
+    student[v]=("{{ d.student|safe }}");
+    v++;
     {% endfor %}
-    <table border="1">
+    console.log(attendance)
+    console.log(teacher)
+    console.log(student)
+
+
+    let table = document.createElement('table');
+    let thead = document.createElement('thead');
+    let tbody = document.createElement('tbody');
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    // Adding the entire table to the body tag
+    document.getElementById('body').appendChild(table);
+
+    let row_1 = document.createElement('tr');
+    let heading_1 = document.createElement('th');
+    heading_1.innerHTML = "student";
+    let heading_2 = document.createElement('th');
+    heading_2.innerHTML = "teacher";
+    let heading_3 = document.createElement('th');
+    heading_3.innerHTML = "attendance";
+    let heading_4 = document.createElement('th');
+    heading_4.innerHTML = "attendance";
+    row_1.appendChild(heading_1);
+    row_1.appendChild(heading_2);
+    row_1.appendChild(heading_3);
+    row_1.appendChild(heading_4);
+    thead.appendChild(row_1);
+
+var flag = 0;
+var row_3;
+var row_3_data_1;
+var row_3_data_2;
+var row_3_data_3;
+var row_3_data_4;
+for(var j = 0; j < student_name.length; j++){
+    for(var i = 0; i <= attendance.length; i++){
+        if(student_name[j] == student[i]){
+            row_3 = document.createElement('tr');
+
+            row_3_data_1 = document.createElement('td');
+            row_3_data_1.innerHTML = student_name[j];
+            row_3.appendChild(row_3_data_1);
+
+            row_3_data_2 = document.createElement('td');
+            row_3_data_2.innerHTML = student_number[j];
+            row_3.appendChild(row_3_data_2);
+
+            row_3_data_3 = document.createElement('td');
+            row_3_data_3.innerHTML = teacher[i];
+            row_3.appendChild(row_3_data_3);
+
+            row_3_data_4 = document.createElement('td');
+            row_3_data_4.innerHTML = attendance[i];
+            row_3.appendChild(row_3_data_4);
+
+            body.appendChild(row_3);
+            flag = 1;
+            break;
+        }
+    }
+    if(flag == 0){
+        row_3 = document.createElement('tr');
+
+        row_3_data_1 = document.createElement('td');
+        row_3_data_1.innerHTML = student_name[j];
+        row_3.appendChild(row_3_data_1);
+
+        row_3_data_2 = document.createElement('td');
+        row_3_data_2.innerHTML = student_number[j];
+        row_3.appendChild(row_3_data_1);
+
+        row_3_data_3 = document.createElement('td');
+        row_3_data_3.innerHTML = "blank";
+        row_3.appendChild(row_3_data_2);
+
+        row_3_data_4 = document.createElement('td');
+        row_3_data_4.innerHTML = "出席";
+        row_3.appendChild(row_3_data_4);
+
+        body.appendChild(row_3);
+        flag = 1;
+    }
+    flag = 0;
+}
     
-
-    <tr>
-      <th>Student</th>
-      <th>Teacher</th>
-      <th>Attendance</th>
-    </tr>
-    <tr>
-    {% for tag in student_list %}
-        <td>{{tag.name}}</td>
-        <td>{{attendance_list[forloop.counter]}}</td>
-        {% for p in attendance_list %} 
-            {% if p.student|stringformat:"s" == tag.name|stringformat:"s" %}
-                <td>{{p.teacher}}</td>
-                <td>{{p.attendance}}</td>        
-            {% else %}
-        {% endif %}
-        {% endfor %}
-
-    </tr>
-    {% endfor %}
-  
-    </table>
-    
+    </script>
 </body>
 
 </html>

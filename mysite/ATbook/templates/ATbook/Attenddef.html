@@ -4,9 +4,12 @@
     
 
 
-    <scrip type="text/javascript">
-        const data = JSON.parse('{{ data_json|safe }}');
-        console.log(data.sample1);
+    <script>
+   {% for member in object_list %}
+  //console.log("{{ member.zip_code|safe }}")
+  data_x1 = ("{{ member.student|safe }}");
+  {% endfor %}
+       
     </script>
 
     

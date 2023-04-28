@@ -37,4 +37,4 @@ class AttendView(CreateView):
 def Attend_def(request):
     object = AttendanceInfo.objects.all()
     context = {'object': object}
-    return render(request, 'ATbook/Attenddef.html', {'data_json': json.dumps(context)})
+    return render(request, 'ATbook/Attenddef.html', context)
