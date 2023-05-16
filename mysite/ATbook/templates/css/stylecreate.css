@@ -1,8 +1,4 @@
-<!DOCTYPE html>
-<html>
-  <head></head>
-  <style type="text/css">
-        .toggle_input {
+.toggle_input {
   position: absolute;
   left: 0;
   top: 0;
@@ -51,14 +47,4 @@
   width: 75px;
   height: 35px;
   margin: auto;
-
 }
-  </style>
-  <body>
-    <form action="" method="POST">
-      {% csrf_token %}
-      {{ form.as_table }}
-      <button type="submit">情報を追加する</button>
-    </form>
-  </body>
-</html>
