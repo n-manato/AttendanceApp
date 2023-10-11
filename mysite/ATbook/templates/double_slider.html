@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style>
+            @import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* スクロールバーを非表示にするために追加 */
+        }
+
+        button {
+            background-color: #fff;
+            border: 0;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 15px;
+            transition: color .2s ease-in;
+        }
+
+        button:hover {
+            color: #222;
+        }
+
+        button:focus {
+            outline: 0;
+        }
+
+        .slider-container {
+            position: relative;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .left-slide {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 35%;
+            transition: transform .5s ease-in-out;
+        }
+
+        .left-slide > div {
+            align-items: center;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .left-slide h1 {
+            font-size: 40px;
+            margin-bottom: 10px;
+            margin-top: -30px;
+        }
+
+        .right-slide {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 35%;
+            width: 65%;
+            transition: transform .5s ease-in-out;
+        }
+
+        .right-slide > div{
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .slider-container .action-buttons button {
+            position: absolute;
+            left: 35%;
+            top: 50%;
+            z-index: 100;
+        }
+
+        .slider-container .action-buttons .down-button {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            transform: translateX(-100%);
+        }
+
+        .slider-container .action-buttons .up-button {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+            transform: translateY(-100%);
+        }
+
+        footer {
+            bottom: 0;
+            background-color: #222;
+            color: #fff;
+            font-family: 'Open Sans', 'Arial', sans-serif;
+            padding: 10px;
+            position: fixed;
+            left: 0;
+            right: 0;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        footer i {
+            color: red;
+        }
+
+        footer a {
+            color: #3C97BF;
+            text-decoration: none;
+        }
+        </style>
+        <title>Student</title>
+    </head>
+    <body>
+        <div class="slider-container">
+            <div class="left-slide"></div>
+            <div class="right-slide"></div>
+            <div class="action-buttons">
+                <button class="down-button">
+                    <i class="fa fa-arrow-down"></i>
+                </button>
+                <button class="up-button">
+                    <i class="fa fa-arrow-up"></i>
+                </button>
+            </div>
+        </div>
+        <!--<a target="_blank" href="https://codepen.io/GrandvincentMarion/full/NaEELP">Codepen</a>-->
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const Data = {{ subject_attendance|safe }};
+            console.log(Data);
+            let count = 0;
+            for (const subject in Data) {
+                if (Data.hasOwnProperty(subject)) {
+                    count++;
+                    for (const date in Data[subject]) {
+                        if (Data[subject].hasOwnProperty(date)) {
+                            const firstHalfAttendance = Data[subject][date]['first_half'];
+                            const latterHalfAttendance = Data[subject][date]['latter_half'];
+                            console.log('科目: ' + subject);
+                            console.log('日付: ' + date);
+                            console.log('前半出席状況: ' + firstHalfAttendance.join(', '));
+                            console.log('後半出席状況: ' + latterHalfAttendance.join(', '));
+                        }
+                    }
+                }
+            }
+            console.log(count)
+            const sliderData = [];
+            // グラデーションのステップ数（ここでは4つの色を生成するために4ステップとしました）
+            const steps = 5;
+            for (let i = 0; i < steps; i++) {
+                // グラデーションを生成するための色の明るさを計算（0〜255の範囲で）
+                const brightness = 205 - (i * (205 / (steps - 1)));
+                // RGB値を計算
+                const color = `rgb(${brightness},${brightness},${brightness})`;
+                // データに色を追加
+                sliderData.push({ backgroundColor: color });
+            }
+
+            // 左側のdiv要素を自動生成
+            const leftSlide = document.querySelector('.left-slide');
+            sliderData.forEach((data) => {
+                const leftDiv = document.createElement('div');
+                leftDiv.style.backgroundColor = data.backgroundColor;
+                leftSlide.appendChild(leftDiv);
+            });
+
+            // 右側のdiv要素を自動生成
+            const rightSlide = document.querySelector('.right-slide');
+            sliderData.forEach((data) => {
+                const rightDiv = document.createElement('div');
+                rightDiv.style.backgroundColor = data.backgroundColor;
+                rightSlide.appendChild(rightDiv);
+            });
+
+            // スライダーの動作
+            const sliderContainer = document.querySelector('.slider-container');
+            const slideRight = document.querySelector('.right-slide');
+            const slideLeft = document.querySelector('.left-slide');
+            const upButton = document.querySelector('.up-button');
+            const downButton = document.querySelector('.down-button');
+            const slidesLength = sliderData.length; // スライドの数を修正
+
+            let activeSlideIndex = slidesLength;
+
+            slideLeft.style.top = `-${(slidesLength - 1) * 100}vh`;
+
+            upButton.addEventListener('click', () => changeSlide('up'));
+            downButton.addEventListener('click', () => changeSlide('down'));
+
+            const changeSlide = (direction) => {
+                const sliderHeight = sliderContainer.clientHeight;
+                if (direction === 'up') {
+                    activeSlideIndex++;
+                    if (activeSlideIndex > slidesLength - 1) {
+                        activeSlideIndex = 0;
+                    }
+                } else if (direction === 'down') {
+                    activeSlideIndex--;
+                    if (activeSlideIndex < 0) {
+                        activeSlideIndex = slidesLength - 1;
+                    }
+                }
+                slideRight.style.transform = `translateY(-${activeSlideIndex * sliderHeight}px)`;
+                slideLeft.style.transform = `translateY(${activeSlideIndex * sliderHeight}px)`;
+            }
+        });
+        </script>
+    </body>
+</html>

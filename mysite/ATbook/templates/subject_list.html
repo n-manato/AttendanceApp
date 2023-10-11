@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+    <link rel="stylesheet"
+          href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js"></script>
+    <section class="intro">
+        <div class="gradient-custom-2 h-100">
+            <div class="mask d-flex align-items-center h-100">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12">
+                            <form method="POST" id="attendance-form">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="department-select" class="form-label">Select Department</label>
+                                    <select class="form-select bg-dark text-white border-dark"
+                                            id="department-select"
+                                            name="department">
+                                        <option value="">Choose department</option>
+                                        {% for dept in department %}
+                                            <option value="{{ dept }}"
+                                                    {% if dept == selected_department %}selected{% endif %}>
+                                                {{ dept }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="date-select" class="form-label">Select Date</label>
+                                    <select class="form-select bg-dark text-white border-dark"
+                                            id="date-select"
+                                            name="date">
+                                        <option value="">Choose department</option>
+                                        {% for date in dates %}
+                                            <option value="{{ date }}" {% if date == selected_date %}selected{% endif %}>{{ date }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive table-container">
+                                <table id="attendance-table" class="table table-dark table-bordered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Student</th>
+                                            <th scope="col">
+                                                {% csrf_token %}
+                                                <button class="btn btn-success"
+                                                        name="button_1"
+                                                        id="button_1"
+                                                        value='button_1'>１・２</button>
+                                            </th>
+                                            <th scope="col">
+                                                {% csrf_token %}
+                                                <button class="btn btn-success"
+                                                        name="button_2"
+                                                        id="button_2"
+                                                        value='button_2'>３・４</button>
+                                            </th>
+                                            <th scope="col">
+                                                {% csrf_token %}
+                                                <button class="btn btn-success"
+                                                        name="button_3"
+                                                        id="button_3"
+                                                        value='button_3'>５・６</button>
+                                            </th>
+                                            <th scope="col">
+                                                {% csrf_token %}
+                                                <button class="btn btn-success"
+                                                        name="button_4"
+                                                        id="button_4"
+                                                        value='button_4'>７・８</button>
+                                            </form>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for data in student_data %}
+                                        <tr>
+                                            <td>{{ data.student }}</td>
+                                            <td>
+                                                {% if data.First_f == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.First_f == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                                {% if data.First_l == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.First_l == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if data.Second_f == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.Second_f == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                                {% if data.Second_l == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.Second_l == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if data.Therd_f == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.Therd_f == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                                {% if data.Therd_l == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.Therd_l == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if data.Forth_f == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.Forth_f == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                                {% if data.Forth_l == '出席' %}
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                {% elif data.Forth_l == '欠席' %}
+                                                    <i class="fas fa-times-circle text-danger"></i>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script>
+$(document).ready(function() {
+    var csrftoken = "{{ csrf_token }}";
+    function shouldSubmitForm() {
+        var dateSelectValue = $("#date-select").val();
+        var departmentSelectValue = $("#department-select").val();
+
+        if (dateSelectValue.trim() !== "" && departmentSelectValue.trim() !== "") {
+            $("#attendance-form").submit();
+        }
+    }
+
+    $("#date-select, #department-select").change(shouldSubmitForm);
+    // ボタンがクリックされたら shouldSubmitForm 関数を呼び出す
+    $("#button_1").click(function(event) {
+        console.log("aaa")
+        var dateSelectValue = $("#date-select").val();
+        var departmentSelectValue = $("#department-select").val();
+
+        if (dateSelectValue.trim() == "" && departmentSelectValue.trim() == "" ||dateSelectValue.trim() == "" || departmentSelectValue.trim() == "") {
+            event.preventDefault();
+            alert("ドロップダウンを選択してください。");
+        }
+    });
+    $("#button_2").click(function(event) {
+        console.log("aaa")
+        var dateSelectValue = $("#date-select").val();
+        var departmentSelectValue = $("#department-select").val();
+
+        if (dateSelectValue.trim() == "" && departmentSelectValue.trim() == "" ||dateSelectValue.trim() == "" || departmentSelectValue.trim() == "") {
+            event.preventDefault();
+            alert("ドロップダウンを選択してください。");
+        }
+    });
+    $("#button_3").click(function(event) {
+        console.log("aaa")
+        var dateSelectValue = $("#date-select").val();
+        var departmentSelectValue = $("#department-select").val();
+
+        if (dateSelectValue.trim() == "" && departmentSelectValue.trim() == "" ||dateSelectValue.trim() == "" || departmentSelectValue.trim() == "") {
+            event.preventDefault();
+            alert("ドロップダウンを選択してください。");
+        }
+    });
+    $("#button_4").click(function(event) {
+        console.log("aaa")
+        var dateSelectValue = $("#date-select").val();
+        var departmentSelectValue = $("#department-select").val();
+
+        if (dateSelectValue.trim() == "" && departmentSelectValue.trim() == "" ||dateSelectValue.trim() == "" || departmentSelectValue.trim() == "") {
+            event.preventDefault();
+            alert("ドロップダウンを選択してください。");
+        }
+    });
+});
+    </script>
+{% endblock %}

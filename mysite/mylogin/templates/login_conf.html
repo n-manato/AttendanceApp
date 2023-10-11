@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>Plus IT</title>
+    </head>
+    <body>
+        <div>Hello World!</div>
+        #ログインユーザーがいれば、usernameをHello World!直下に表示
+        {% if user %}<div>{{ user.username }}</div>{% endif %}
+    </body>
+</html>

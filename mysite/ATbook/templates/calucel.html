@@ -1,0 +1,492 @@
+{% load django_bootstrap5 %}
+<!DOCTYPE html>
+<html>
+    <head>
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+        <style>
+     @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rubik:wght@300;400;500;600;700&display=swap");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* border: 1px solid black; */
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f6f6f6;
+    flex-direction: column;
+    
+}
+.table-container {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .table-container table {
+        color: #ffffff;
+      }
+
+      .table-container thead th,
+      .table-container tbody th {
+        color: #ffffff;
+        background-color: #343a40;
+        text-align: left;
+      }
+
+      .table-container tbody td {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.65);
+      }
+button {
+    font-family: "Rubik", sans-serif;
+    background-color: transparent;
+    border: 1px solid white;
+    color: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    height: 50px;
+    transition: 0.5s ease;
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.4);
+    transition-delay: 0 !important;
+}
+
+.container {
+    position: fixed; /* 要素の位置を固定 */
+    top: 0; /* 上端に配置 */
+    left: 0; /* 左端に配置 */
+    width: 100vw; /* ビューポートの幅いっぱいに広げる */
+    height: 100vh; /* ビューポートの高さいっぱいに広げる */
+    border-radius: 0; /* ボーダーの角を丸めない */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: #ffffff;
+    background: -webkit-linear-gradient(
+          to top,
+          rgba(106, 17, 203, 1),
+          rgba(37, 117, 252, 1)
+        );
+
+        /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        background: linear-gradient(
+          to top,
+          rgba(106, 17, 203, 1),
+          rgba(37, 117, 252, 1)
+        );
+            max-width: 100%;
+}
+
+.container .content {
+    width: 100%;
+    display: flex;
+}
+
+.content .introduce {
+    position: relative;
+    width: 40%;
+    height: 100%;
+    z-index: 20;
+}
+
+.introduce .wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: fit-content;
+    padding: 0 25px 0 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    pointer-events: none;
+}
+
+.introduce .wrapper span {
+    overflow: hidden;
+}
+
+.introduce .wrapper span > * {
+    transition: 0.5s ease;
+    opacity: 0;
+    transform: translateY(300px);
+    transition-delay: calc((3 - var(--idx)) * 0.1s);
+}
+
+.introduce .wrapper.active {
+    pointer-events: all;
+}
+
+.introduce .wrapper.active span > * {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(var(--idx) * 0.1s);
+}
+
+.introduce:not(.place) {
+    font-family: "Rubik", sans-serif;
+}
+
+.introduce .country {
+    font-size: 1.5rem;
+    font-weight: 400;
+}
+
+.introduce .place {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 5.5rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    line-height: 1.1;
+    letter-spacing: 1px;
+    margin-top: 10px;
+}
+
+.introduce .describe {
+    font-size: 1rem;
+    margin-top: 8px;
+    font-weight: 300;
+}
+
+.introduce .discover-button {
+    width: 250px;
+    height: 50px;
+    border-radius: 50px;
+    margin-top: 20px;
+}
+
+.content .thumbnail-list {
+    position: relative;
+    height: 300px;
+    flex: 1;
+}
+
+.thumbnail-list .wrapper {
+    position: relative;
+    z-index: 10;
+    height: 300px;
+}
+
+.thumbnail-list .wrapper .thumbnail {
+    position: absolute;
+    transition: 0.75s cubic-bezier(0.6, 0.1, 0.3, 1);
+    height: 300px;
+    width: 200px;
+    border-radius: 15px;
+    overflow: hidden;
+    transform: translateX(calc(var(--idx) * 230px));
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.4);
+    background-color: #343A40; /* ブロックの背景色を指定 */
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.container .navigation {
+    margin-left: 40%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 50px 50px 50px 0;
+    z-index: 20;
+}
+
+.navigation .next-button {
+    width: 180px;
+    border-radius: 60px;
+}
+
+.navigation .line {
+    flex: 1;
+    height: 2px;
+    background-color: #ffffff;
+}
+
+.navigation .ordinal-number {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+    
+}
+
+.ordinal-number h2 {
+    position: absolute;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 3.5rem;
+    font-weight: 400;
+    line-height: 1;
+    transform: translateY(200%);
+    transition: 0.5s ease;
+    
+}
+
+.ordinal-number h2.active {
+    transform: unset;
+    margin-bottom: 0rem;
+}
+
+/* 新しく追加されたスタイル */
+.color-block {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.introduce.active .color-block {
+    opacity: 1;
+}
+
+        </style>
+    </head>
+    <body class="">
+        <div class="container">
+            <div class="content">
+                <div class="introduce"></div>
+                <div class="thumbnail-list">
+                    <div class="wrapper"></div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="next-button">Next</button>
+                <span class="line"></span>
+                <span class="ordinal-number"></span>
+            </div>
+        </div>
+        <script>
+      var data = [
+      {
+      color: "#F5A623",
+      country: "Monday",
+      place: "Kenai Fjords Park",
+      describe:
+      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo, expedita reprehenderit!",
+      },
+      {
+      color: "#8B50FF",
+      country: "Sunday",
+      place: "Glowworm Caves",
+      describe:
+      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo, expedita reprehenderit!",
+      },
+      {
+      color: "#1BBD69",
+      country: "Tuesday",
+      place: "Pamukkale Castle",
+      describe:
+      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo, expedita reprehenderit!",
+      },
+      {
+      color: "#E84545",
+      country: "Wednesday",
+      place: "Pragser Wildsee",
+      describe:
+      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo, expedita reprehenderit!",
+      },
+      {
+      color: "#1C8AF9",
+      country: "Thursday",
+      place: "Kumamoto Castle",
+      describe:
+      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo, expedita reprehenderit!",
+      },
+      {
+      color: "#FF5252",
+      country: "Friday",
+      place: "Sepulveda Dam",
+      describe:
+      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illo, expedita reprehenderit!",
+      },
+      ];
+      const introduce = document.querySelector(".introduce");
+      const ordinalNumber = document.querySelector(".ordinal-number");
+      ordinalNumber.innerHTML = "";
+      introduce.innerHTML = "";
+      for (let i = 0; i < data.length; i++) {
+      introduce.innerHTML += `
+      <div class="wrapper">
+        <span>
+          <h5 class="country" style="--idx: 0">${data[i].country}</h5>
+        </span>
+        <span>
+            <div class="table-responsive table-container">
+          <table class="table table-dark table-bordered mb-0 rounded-3 table-responsive table-container">
+	<tr>
+        <thead>
+		<th></th>
+		<th>HR</th>
+		<th>1・2</th>
+		<th>3・4</th>
+		<th>5・6</th>
+		<th>7・8</th>
+        </thead>
+	</tr>
+	<tr>
+		<td>A</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>A</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>B</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>C</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>D</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>E</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>F</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>F</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>F</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>F</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+    <tr>
+		<td>F</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+		<td>出席</td>
+	</tr>
+</table>
+</div>
+        </span>
+        <span>
+          <p class="describe" style="--idx: 2">Check Attendance Data</p>
+        </span>
+        <span>
+          <!--<button class="discover-button" style="--idx: 3">Discover Now</button>-->
+        </span>
+        <!-- 新しく追加されたカラーブロック -->
+        <div class="color-block" style="background-color: ${data[i].color};"></div>
+      </div>
+      `;
+      ordinalNumber.innerHTML += `
+      <h2>0${i + 1}</h2>
+      `;
+      }
+      introduce.children[0].classList.add("active");
+      ordinalNumber.children[0].classList.add("active");
+      const thumbnailListWrapper = document.querySelector(".thumbnail-list .wrapper");
+      for (let i = 0; i < data.length; i++) {
+      thumbnailListWrapper.innerHTML += `
+      <div class="thumbnail" style="--idx: ${ i }"></div>
+      `;
+      }
+
+      // メインの背景色を変更するためにcontainerクラスの要素を取得
+      const container = document.querySelector(".container");
+      // 初期表示時に最初のブロックの背景色を適用
+      container.style.backgroundColor = data[0].color;
+
+      var currentIndex = 0;
+      const nextBtn = document.querySelector(".navigation .next-button");
+      nextBtn.addEventListener("click", () => {
+      nextBtn.disabled = true;
+      var clone = thumbnailListWrapper.children[0].cloneNode(true);
+      thumbnailListWrapper.appendChild(clone);
+      setTimeout(() => {
+      thumbnailListWrapper.children[0].remove();
+      nextBtn.disabled = false;
+      }, 0);
+      for (let i = 1; i < thumbnailListWrapper.childElementCount; i++) {
+      thumbnailListWrapper.children[i].style = `--idx: ${i - 1}`;
+      }
+      if (currentIndex < data.length - 1) {
+      currentIndex++;
+      } else currentIndex = 0;
+      for (let i = 0; i < data.length; i++) {
+      introduce.children[i].classList.remove("active");
+      ordinalNumber.children[i].classList.remove("active");
+      }
+      introduce.children[currentIndex].classList.add("active");
+      ordinalNumber.children[currentIndex].classList.add("active");
+      ordinalNumber.children[currentIndex].textContent = `0${currentIndex + 1}`;
+
+      // メインの背景に選択されたカラーブロックの色を適用
+      });
+        </script>
+    </body>
+</html>

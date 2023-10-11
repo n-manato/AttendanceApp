@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+  <head>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+  </head>
+  <body class="">
+    {% block content %}
+      <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+      <section class="intro">
+        <div class="gradient-custom-2 h-100">
+          <div class="mask d-flex align-items-center h-100">
+            <div class="container">
+              <div class="row justify-content-center">
+                <div class="col-12">
+                  <h1>Teacher: {{ teacher }}</h1>
+                  {% if success_message %}<div class="alert alert-success mt-3">{{ success_message }}</div>{% endif %}
+                  <form method="POST" id="date-form">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label for="date-select" class="form-label">Select Date:</label>
+                      <input type="date"
+                             class="form-control bg-dark text-white border-dark"
+                             id="date-select"
+                             name="date-select"
+                             {% if selected_date %}value="{{ selected_date }}"{% endif %}>
+                    </div>
+                  </form>
+                  <div class="table-responsive table-container">
+                    <table id="student-table" class="table table-dark table-bordered mb-0">
+                      <thead>
+                        <tr>
+                          <th scope="col">Full Name</th>
+                          <th scope="col">Home Room:{{ submit_teacher.HR }}</th>
+                          <th scope="col">
+                            １・２：{{ submit_teacher.First }}
+                            <select class="form-select bg-dark text-white border-dark"
+                                    id="subject-select-First"
+                                    name="subject-select-First">
+                              <option value="">Choose Subject</option>
+                              {% for subject in subjects %}
+                                <option value="{{ subject.subject }}"
+                                        {% if subject.subject == selected_subject.First %}selected{% endif %}>
+                                  {{ subject.subject }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                          </th>
+                          <th scope="col">
+                            ３・４：{{ submit_teacher.Second }}
+                            <select class="form-select bg-dark text-white border-dark"
+                                    id="subject-select-Second"
+                                    name="subject-select-Second">
+                              <option value="">Choose Subject</option>
+                              {% for subject in subjects %}
+                                <option value="{{ subject.subject }}"
+                                        {% if subject.subject == selected_subject.Second %}selected{% endif %}>
+                                  {{ subject.subject }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                          </th>
+                          <th scope="col">
+                            ５・６：{{ submit_teacher.Third }}
+                            <select class="form-select bg-dark text-white border-dark"
+                                    id="subject-select-Third"
+                                    name="subject-select-Third">
+                              <option value="">Choose Subject</option>
+                              {% for subject in subjects %}
+                                <option value="{{ subject.subject }}"
+                                        {% if subject.subject == selected_subject.Third %}selected{% endif %}>
+                                  {{ subject.subject }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                          </th>
+                          <th scope="col">
+                            ７・８：{{ submit_teacher.Forth }}
+                            <select class="form-select bg-dark text-white border-dark"
+                                    id="subject-select-Forth"
+                                    name="subject-select-Forth">
+                              <option value="">Choose Subject</option>
+                              {% for subject in subjects %}
+                                <option value="{{ subject.subject }}"
+                                        {% if subject.subject == selected_subject.Forth %}selected{% endif %}>
+                                  {{ subject.subject }}
+                                </option>
+                              {% endfor %}
+                            </select>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for student_name, student_data in attend.items %}
+                          <tr>
+                            <td>{{ student_name }}</td>
+                            {% for period, time_data in student_data.items %}
+                              <td>
+                                <div class="form-check">
+                                  <button class="button"
+                                          id="button_{{ student_name }}_{{ period }}_first"
+                                          name="button_{{ student_name }}_{{ period }}_first"
+                                          {% if time_data.first_half.0 == "出席" %}data-state="1"{% endif %}
+                                          {% if time_data.first_half.0 == "欠席" %}data-state="2"{% endif %}
+                                          data-state="3">
+                                    <i class="fas fa-check"></i>
+                                  </button>
+                                  {% if period != "HR" %}
+                                    <button class="button"
+                                            id="button_{{ student_name }}_{{ period }}_latter"
+                                            name="button_{{ student_name }}_{{ period }}_latter"
+                                            {% if time_data.latter_half.0 == "出席" %}data-state="1"{% endif %}
+                                            {% if time_data.latter_half.0 == "欠席" %}data-state="2"{% endif %}
+                                            data-state="3">
+                                      <i class="fas fa-check"></i>
+                                    </button>
+                                  {% endif %}
+                                </div>
+                              </td>
+                            {% endfor %}
+                          </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <form method="POST" id="attendance-form">
+                {% csrf_token %}
+                <div class="row justify-content-center mt-3">
+                  <div class="col-6">
+                    <button type="submit"
+                            id="submit-btn"
+                            class="btn btn-primary w-100"
+                            name="submit">Submit</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endblock %}
+    {% block scripts %}
+      <script src="{% static 'js/jquery.min.js' %}"></script>
+      <script>
+        //選択された時間のボタンを3から1の状態に変更する
+        function getDataStateForPeriod(period,selectedId) {
+          const dataStates = [];
+          // select-subject要素を取得
+          const selectSubject = document.getElementById("subject-select-"+period)
+          const buttons = document.querySelectorAll(`.button[id^="button_"][id$="${period}_first"], .button[id^="button_"][id$="${period}_latter"]`);
+          // select-subjectの変更イベントを監視
+          selectSubject.addEventListener('change', () => {
+              const selectedValue = selectSubject.value; // 選択された値を取得
+              if (selectedValue === "") {
+                buttons.forEach(button => {
+                  const dataState = button.getAttribute('data-state');
+                  if (dataState != '3'){
+                    button.setAttribute('data-state', '3');
+                    updateButtonStyle(button, '3'); // ボタンのスタイルを更新
+                  }
+                  });
+                  return; // 選択された値が空の場合は何もしない
+              }
+              
+              buttons.forEach(button => {
+                  const dataState = button.getAttribute('data-state');
+                  if (dataState == '3'){
+                    button.setAttribute('data-state', '1');
+                    updateButtonStyle(button, '1'); // ボタンのスタイルを更新
+                  }
+                  dataStates.push(dataState);
+              });
+            });
+
+              return dataStates;
+        }
+        const periodDataState12 = getDataStateForPeriod("First");
+        console.log("1・2 期間のボタンのdata-state:", periodDataState12);
+        const periodDataState34 = getDataStateForPeriod("Second");
+        console.log("3・4 期間のボタンのdata-state:", periodDataState34);
+        const periodDataState56 = getDataStateForPeriod("Third");
+        console.log("5・6 期間のボタンのdata-state:", periodDataState56);
+        const periodDataState78 = getDataStateForPeriod("Forth");
+        console.log("7・8 期間のボタンのdata-state:", periodDataState78);
+
+        // ボタン要素を取得
+        const buttons = document.querySelectorAll('.button');
+
+        // ボタンの状態を更新する関数
+      function updateButtonStyle(button, state) {
+          switch (state) {
+              case "1":
+                  button.style.backgroundColor = 'green';
+                  button.innerHTML = '<i class="fas fa-check"></i>';
+                  break;
+              case "2":
+                  button.style.backgroundColor = 'red';
+                  button.innerHTML = '<i class="fas fa-times"></i>';
+                  break;
+              case "3":
+                  button.style.backgroundColor = '#808080';
+                  button.innerHTML = '<i class="fas fa-question"></i>';
+                  break;
+              default:
+                  break;
+          }
+          // ボタンを丸くするスタイルを追加
+          button.style.borderRadius = '50%';
+          button.style.width = '40px'; // ボタンの幅を調整
+          button.style.height = '40px'; // ボタンの高さを調整
+          button.style.border = 'none'; // ボタンのボーダーを削除
+          button.style.color = 'white'; // テキスト色を白に設定
+          button.style.cursor = 'pointer';
+      }
+
+
+          // 初期状態を設定
+          buttons.forEach(button => {
+              const initialState = button.getAttribute('data-state');
+              updateButtonStyle(button, initialState);
+              button.addEventListener('click', () => {
+                  const currentState = button.getAttribute('data-state');
+                  let nextState;
+                  switch (currentState) {
+                      case "1":
+                          nextState = "2";
+                          break;
+                      case "2":
+                          nextState = "3";
+                          break;
+                      case "3":
+                          nextState = "1";
+                          break;
+                      default:
+                          nextState = "1";
+                          break;
+                  }
+                  button.setAttribute('data-state', nextState);
+                  updateButtonStyle(button, nextState);
+              });
+          });
+
+
+
+
+        $(document).ready(function() {
+            // ドロップダウンが変更されたらフォームを自動的にサブミット
+            var csrftoken = "{{ csrf_token }}";
+            $("#date-select").change(function() {
+                $("#date-form").submit();
+            });
+
+            // フォームがサブミットされたときの処理
+            $("#attendance-form").submit(function(event) {
+                // デフォルトのフォームのサブミットをキャンセル
+                event.preventDefault();
+
+                var students = {{ students|safe }};
+                var hour = {{ hour|safe }}
+                // データをコンソールに表示
+                console.log(students);
+                const dateSelect = document.getElementById("date-select");
+                const checkData = {
+                    csrfmiddlewaretoken: csrftoken,
+                    data: [], // 配列として初期化
+                    action: 'submit',
+                    selected_date: dateSelect.value,
+                    
+                };
+
+                for (var i = 0; i < students.length; i++) {
+                    console.log(students[i]);
+                    for (var j = 0; j < hour.length; j++) {
+                        console.log(hour[j]);
+                        const buttons = document.querySelectorAll(`.button[id^="button_${students[i]}"][id$="${hour[j]}_first"], .button[id^="button_${students[i]}"][id$="${hour[j]}_latter"]`);
+                        console.log(buttons);
+                        const selectSubjectId = "subject-select-"+hour[j];
+                        const selectSubject = document.getElementById(selectSubjectId);
+                        console.log(selectSubject)
+
+                        // "HR" の場合、選択値が空欄であるかどうかを確認し、空欄の場合に空文字列に設定
+                        if (hour[j] === hour[0]) {
+                            selectedValue = 'HR'; // または他のデフォルト値に置き換えることも可能
+                        }else {
+                          selectedValue = selectSubject.value;
+                        }
+                        const dataStates = []; // dataStatesの初期化をループ内で行うように修正
+                        buttons.forEach(button => {
+                            const dataState = button.getAttribute('data-state');
+                            dataStates.push(dataState);
+                        });
+                        checkData.data.push({
+                            student: students[i],
+                            subject: selectedValue,
+                            hour: hour[j],
+                            first_half: dataStates[0],
+                            latter_half: j === 0 ? dataStates[0] : dataStates[1]
+                        });
+                    }
+                }
+                // データをJSON形式に変換
+                checkData.data = JSON.stringify(checkData.data);
+                console.log(checkData);
+
+                // Ajaxリクエストを送信
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'ATbook:Attenddef' %}",
+                    data: checkData,
+                    dataType: "json",
+                    success: function(response) {
+                        console.log("Redirecting to: " + response.redirect);
+                        // レスポンスを受け取った後の処理をここに記述
+                        // responseにはビューからのデータが含まれています
+                        if (response.redirect) {
+                            // リダイレクトが指示された場合、指定のURLに遷移
+                            window.location.href = response.redirect;
+                        } else {
+                            // リダイレクトが指示されていない場合、その他の処理を行う
+                            console.log("Success");
+                        }
+                    },
+                    error: function(xhr, errmsg, err) {
+                        // エラーハンドリングを行う場合のコード
+                        console.log("Error");
+                    }
+                });
+            });
+          });
+      </script>
+    {% endblock %}
+  </body>
+</html>
