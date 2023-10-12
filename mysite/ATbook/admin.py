@@ -1,6 +1,11 @@
 from django.contrib import admin
-from .models import AttendanceInfo,Attend
+from .models import AttendanceInfo,Attend,Total
 admin.site.register(Attend)
+
+@admin.register(Total)
+class AdminTotal(admin.ModelAdmin):
+    search_fields = ('student',)
+    pass
 
 class AttendanceInfoAdmin(admin.ModelAdmin):
     readonly_fields = ("date",)
