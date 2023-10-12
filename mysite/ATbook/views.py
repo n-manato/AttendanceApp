@@ -192,21 +192,20 @@ def Attend_def(request):
                 for student in students:
                     if student.full_name not in dict_attend:
                         dict_attend[student.full_name] = {}
-                        dict_attend[student.full_name]['late'] = 0
-                        dict_attend[student.full_name]['leave'] = 0
-                        dict_attend[student.full_name]['absent'] = 0
-                        dict_attend[student.full_name]['present'] = 0
+                        total_late = 0
+                        total_leave = 0
+                        total_absent = 0
+                        total_present = 0
                     totals = Total.objects.filter(student = student)
-                    
+                    dict_attend[student.full_name]["total"] ="0/0/0/0"
+
                     for total in totals:
-                        dict_attend[student.full_name]['late'] += total.late
-                        dict_attend[student.full_name]['leave'] += total.leave
-                        dict_attend[student.full_name]['absent'] += total.absent
-                        dict_attend[student.full_name]['present'] += total.present
-                        print(dict_attend[student.full_name]['late'])
-                        print(dict_attend[student.full_name]['leave'])
-                        print(dict_attend[student.full_name]['absent'])
-                        print(dict_attend[student.full_name]['present'])
+                        total_late += total.late
+                        total_leave += total.leave
+                        total_absent += total.absent
+                        total_present += total.present
+                    dict_attend[student.full_name]["total"] = f"{total_late}/{total_leave}/{total_absent}"
+                    
                     for times in time_data:
                         if times.hour not in dict_attend[student.full_name]:
                             dict_attend[student.full_name][times.hour] = {
