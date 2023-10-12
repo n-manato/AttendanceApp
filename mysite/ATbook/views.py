@@ -197,7 +197,7 @@ def Attend_def(request):
                         total_absent = 0
                         total_present = 0
                     totals = Total.objects.filter(student = student)
-                    dict_attend[student.full_name]["total"] ="0/0/0/0"
+                    dict_attend[student.full_name]["total"] ="0/0/0"
 
                     for total in totals:
                         total_late += total.late

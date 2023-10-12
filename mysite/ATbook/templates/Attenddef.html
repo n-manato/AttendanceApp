@@ -32,6 +32,7 @@
                     </div>
                   </form>
                   <div class="table-responsive table-container">
+                    {% if not initial_access %} 
                     <table id="student-table" class="table table-dark table-bordered mb-0">
                       <thead>
                         <tr>
@@ -133,6 +134,7 @@
                         {% endfor %}
                       </tbody>
                     </table>
+                    {% endif %}
                   </div>
                 </div>
               </div>
