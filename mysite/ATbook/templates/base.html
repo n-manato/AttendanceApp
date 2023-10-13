@@ -53,13 +53,14 @@
       .table-container thead th,
       .table-container tbody th {
         color: #ffffff;
-        background-color: #343a40;
+        background-color: rgba(20,23,25,0.9);
         text-align: left;
       }
 
       .table-container tbody td {
         font-weight: 500;
         color: rgba(255, 255, 255, 0.65);
+        background-color: rgba(20,23,25,0.75);
       }
       /*menu*/
 .menu{
@@ -155,7 +156,7 @@
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-     $('.menu').on('click',function(){
+    $('.menu').on('click',function(){
     $('.menu__line').toggleClass('active');
     $('.gnav').fadeToggle();
 });
