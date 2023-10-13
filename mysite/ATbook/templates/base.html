@@ -48,6 +48,7 @@
 
       .table-container table {
         color: #ffffff;
+        width: 100%;
       }
 
       .table-container thead th,
@@ -55,12 +56,22 @@
         color: #ffffff;
         background-color: rgba(20,23,25,0.9);
         text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 80px;
+        max-width: 700px;
       }
 
       .table-container tbody td {
         font-weight: 500;
         color: rgba(255, 255, 255, 0.65);
         background-color: rgba(20,23,25,0.75);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 80px;
+        max-width: 700px;
       }
       /*menu*/
 .menu{

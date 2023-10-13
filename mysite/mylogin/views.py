@@ -14,7 +14,7 @@ class Login(View):
             if user.groups.filter(name='Student').exists():
                 return redirect('/atbook/studentslist/')
             elif user.groups.filter(name__in=['HomeroomTeacher', 'SubjectTeacher']).exists():
-                return redirect('/atbook/subject_list/')
+                return redirect('/atbook/attenddef/')
             else:
                 return redirect('/atbook/welcome/')  # デフォルトのリダイレクト先（所属グループが不明の場合）
        
@@ -30,7 +30,7 @@ class Login(View):
        if user.groups.filter(name='Student').exists():
            return redirect('/atbook/studentslist/')
        elif user.groups.filter(name__in=['HomeroomTeacher', 'SubjectTeacher']).exists():
-           return redirect('/atbook/subject_list/')
+           return redirect('/atbook/attenddef/')
        else:
            return redirect('/atbook/welcome/')  # デフォルトのリダイレクト先（所属グループが不明の場合）
    

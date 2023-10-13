@@ -7,8 +7,7 @@ from .models import AttendanceInfo, Attend, Hour, Total
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
-from datetime import date
-from datetime import datetime
+from datetime import datetime, timedelta, date
 import json
 from django.db.models import Q
 
@@ -22,20 +21,23 @@ def Students_list(request):
     # 必要なデータを取得してコンテキストに追加する
     user = request.user
     subjects = user.Subject.all()
-    selected_subject = None
-    selected_start = None
-    selected_end = None
+    today_date = date.today()
+    next_date = today_date + timedelta(1)
+    selected_subject = subjects.last()
+    selected_start = today_date.strftime("%Y-%m-%d")
+    selected_end = next_date.strftime("%Y-%m-%d")
     attendanceinfo = []
     dict_attend = {}
     student = user.full_name
     unique_dates = None
     unique_students = None
-    if request.method == "POST":
+    if request.method == "POST" or request.method == "GET":
         print(request.POST)
-        selected_subject = Subject.objects.get(
-            subject=request.POST.get('subject'))
-        selected_start = request.POST.get('start_date')
-        selected_end = request.POST.get('end_date')
+        if request.method != "GET":
+            selected_subject = Subject.objects.get(
+                subject=request.POST.get('subject'))
+            selected_start = request.POST.get('start_date')
+            selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
             date__lte=selected_end), subject=selected_subject, student=User.objects.get(full_name=student))
         unique_dates = set(attendance.date.strftime('%Y-%m-%d')
@@ -57,16 +59,14 @@ def Students_list(request):
 
     menu_items = [
         {'name': 'Logout', 'url': reverse('loginapp:logout')},
-        {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
-        {'name': 'Attend Definition', 'url': reverse('ATbook:Attenddef')},
-        {'name': 'Admin', 'url': reverse('admin:index')},
+        {'name': 'Students List', 'url': reverse('ATbook:Studentslist')},
     ]
     context = {
         'subjects': subjects,
         'unique_date': unique_dates,
         'selected_subject': selected_subject,
-        'selected_start': request.POST.get('start_date'),
-        'selected_end': request.POST.get('end_date'),
+        'selected_start': selected_start,
+        'selected_end': selected_end,
         'attendanceinfo': dict_attend,
         'student': student,
         'menu_items': menu_items,
@@ -79,22 +79,24 @@ def Teachers_list(request):
     # 必要なデータを取得してコンテキストに追加する
     user = request.user
     subjects = user.Subject.all()
-    selected_subject = None
-    selected_start = None
-    selected_end = None
+    today_date = date.today()
+    next_date = today_date + timedelta(1)
+    selected_subject = subjects.last()
+    selected_start = today_date.strftime("%Y-%m-%d")
+    selected_end = next_date.strftime("%Y-%m-%d")
     attendanceinfo = []
     dict_attend = {}
     teacher = user.full_name
     unique_dates = None
     unique_students = None
 
-    if request.method == "POST":
+    if request.method == "POST" or request.method == "GET":
         print(request.POST)
-        
-        selected_subject = Subject.objects.get(
+        if request.method != "GET":
+            selected_subject = Subject.objects.get(
             subject=request.POST.get('subject'))
-        selected_start = request.POST.get('start_date')
-        selected_end = request.POST.get('end_date')
+            selected_start = request.POST.get('start_date')
+            selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
             date__lte=selected_end), subject=selected_subject)
         unique_dates = set(attendance.date.strftime('%Y-%m-%d') for attendance in attendanceinfo)
@@ -124,8 +126,8 @@ def Teachers_list(request):
         'subjects': subjects,
         'unique_date': unique_dates,
         'selected_subject': selected_subject,
-        'selected_start': request.POST.get('start_date'),
-        'selected_end': request.POST.get('end_date'),
+        'selected_start': selected_start,
+        'selected_end': selected_end,
         'attendanceinfo': dict_attend,
         'teacher': teacher,
         'menu_items': menu_items,
@@ -156,6 +158,7 @@ def Attend_def(request):
     if today_date not in many_date:
         many_date.append(today_date)
     messeage = None
+    selected_date = today_date
     selected_department = 'CS'
     selected_department = Department.objects.get(name=selected_department)
     dict_attend = {}
@@ -166,7 +169,7 @@ def Attend_def(request):
     time_hour_name = [time_hour.hour for time_hour in time_hours]
 
     # POST時の処理
-    if request.method == "POST":
+    if request.method == "POST" or request.method == 'GET':
         success_message = None
         many_date = [date.strftime("%Y-%m-%d") for date in dates]
         today_date = date.today().strftime("%Y-%m-%d")
@@ -176,13 +179,14 @@ def Attend_def(request):
         selected_department = Department.objects.get(name=selected_department)
         selected_date = today_date
         dict_attend = {}
-        if 'date-select' in request.POST:
+        if 'date-select' in request.POST or request.method == 'GET':
             # POSTリクエストがドロップダウンから送信された場合の処理
-            if request.POST.get('date-select') is "":
+            if request.POST.get('date-select') is "" and request.method != 'GET':
                 selected_subject = None
                 students = None
             else:
-                selected_date = request.POST.get('date-select')
+                if request.method != 'GET':
+                    selected_date = request.POST.get('date-select')
                 attendance_info = AttendanceInfo.objects.filter(
                     date=selected_date, student__departments=selected_department).order_by('time')
                 students = User.objects.filter(
