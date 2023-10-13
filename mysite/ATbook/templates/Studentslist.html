@@ -18,7 +18,7 @@
             <div class="container">
               <div class="row justify-content-center">
                 <div class="col-12">
-                  <h1>Teacher: {{ student }}</h1>
+                  <h1 style="color: white;">Teacher: {{ student }}</h1>
                   <form method="POST" id="select-form">
                     {% csrf_token %}
                     <div class="mb-3">
@@ -38,7 +38,7 @@
                     <div class="row">
                       <div class="col">
                         <div class="form-group">
-                          <label for="start-date" class="form-label">Start Date:</label>
+                          <label for="start-date" class="form-label" style="color: white;">Start Date:</label>
                           <input type="date"
                                  class="form-control bg-dark text-white border-dark"
                                  id="start_date"
@@ -48,7 +48,7 @@
                       </div>
                       <div class="col">
                         <div class="form-group">
-                          <label for="end-date" class="form-label">End Date:</label>
+                          <label for="end-date" class="form-label" style="color: white;">End Date:</label>
                           <input type="date"
                                  class="form-control bg-dark text-white border-dark"
                                  id="end_date"
@@ -63,7 +63,7 @@
                     <table id="student-table" class="table table-dark table-bordered mb-0">
                       <thead>
                         <tr>
-                          <th scope="col">Full Name</th>
+                          <th scope="col" style="color: white;">Full Name</th>
                           {% for date in unique_date %}<th>{{ date }}</th>{% endfor %}
                         </thead>
                         <tbody>

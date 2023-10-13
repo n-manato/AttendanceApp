@@ -18,11 +18,11 @@
                         <div class="container">
                             <div class="row justify-content-center">
                                 <div class="col-12">
-                                    <h1>Teacher: {{ teacher }}</h1>
+                                    <h1 style="color: white;">Teacher: {{ teacher }}</h1>
                                     <form method="POST" id="select-form">
                                         {% csrf_token %}
                                         <div class="mb-3">
-                                            <label for="subject-select" class="form-label">Select Subject:</label>
+                                            <label for="subject-select" class="form-label" style="color: white;">Select Subject:</label>
                                             <select class="form-select bg-dark text-white border-dark"
                                                     id="subject-select"
                                                     name="subject">
@@ -38,7 +38,7 @@
                                         <div class="row">
                                             <div class="col">
                                                 <div class="form-group">
-                                                    <label for="start-date" class="form-label">Start Date:</label>
+                                                    <label for="start-date" class="form-label" style="color: white;">Start Date:</label>
                                                     <input type="date"
                                                            class="form-control bg-dark text-white border-dark"
                                                            id="start_date"
@@ -48,7 +48,7 @@
                                             </div>
                                             <div class="col">
                                                 <div class="form-group">
-                                                    <label for="end-date" class="form-label">End Date:</label>
+                                                    <label for="end-date" class="form-label" style="color: white;">End Date:</label>
                                                     <input type="date"
                                                            class="form-control bg-dark text-white border-dark"
                                                            id="end_date"
