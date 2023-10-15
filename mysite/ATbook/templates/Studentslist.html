@@ -22,7 +22,7 @@
                   <form method="POST" id="select-form">
                     {% csrf_token %}
                     <div class="mb-3">
-                      <label for="subject-select" class="form-label">Select Subject:</label>
+                      <label for="subject-select" class="form-label" style="color: white;">Select Subject:</label>
                       <select class="form-select bg-dark text-white border-dark"
                               id="subject-select"
                               name="subject">
@@ -95,6 +95,13 @@
                         </tbody>
                       </table>
                     </div>
+                    <div class="row justify-content-center mt-3">
+                      <div class="col-6">
+                        <button type="csv"
+                                id="csv-btn"
+                                class="btn btn-primary w-100"
+                                name="csv">Download CSV</button>
+                      </div>
                   </div>
                 </div>
               </div>

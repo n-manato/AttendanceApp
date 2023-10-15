@@ -155,10 +155,12 @@ def Attend_def(request):
     dates = AttendanceInfo.objects.values_list('date', flat=True).distinct()
     many_date = [date.strftime("%Y-%m-%d") for date in dates]
     today_date = date.today().strftime("%Y-%m-%d")
+
     if today_date not in many_date:
         many_date.append(today_date)
     messeage = None
-    selected_date = today_date
+    selected_date = request.session.get("selected_date")
+    request.session["selected_date"] = today_date
     selected_department = 'CS'
     selected_department = Department.objects.get(name=selected_department)
     dict_attend = {}
@@ -170,18 +172,20 @@ def Attend_def(request):
 
     # POST時の処理
     if request.method == "POST" or request.method == 'GET':
-        success_message = None
+        if request.method == "POST":
+            success_message = None
         many_date = [date.strftime("%Y-%m-%d") for date in dates]
         today_date = date.today().strftime("%Y-%m-%d")
         if today_date not in many_date:
             many_date.append(today_date)
         selected_department = 'CS'
         selected_department = Department.objects.get(name=selected_department)
-        selected_date = today_date
         dict_attend = {}
+
+
         if 'date-select' in request.POST or request.method == 'GET':
             # POSTリクエストがドロップダウンから送信された場合の処理
-            if request.POST.get('date-select') is "" and request.method != 'GET':
+            if request.POST.get('date-select') == "" and request.method != 'GET':
                 selected_subject = None
                 students = None
             else:
@@ -231,6 +235,7 @@ def Attend_def(request):
             selected_date = request.POST.get('selected_date')
             success_message = "Data submitted successfully."
             request.session['message'] = success_message
+            request.session["selected_date"] = selected_date
             print(selected_date)
             subject_instance = None
             for item in json_data:
@@ -318,9 +323,9 @@ def Attend_def(request):
                     elif last_flag == 1:
                         print('早退')
                         leave = 1
-                    elif first_flag + last_flag == 2 and middle_flag == 0:
-                        print('休み')
-                        absent = 1
+                elif first_flag + last_flag == 2 and middle_flag == 0:
+                    print('休み')
+                    absent = 1
                 else:
                     print('出席')
                     present = 1
