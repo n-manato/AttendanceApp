@@ -104,7 +104,7 @@
                             {% for period, time_data in student_data.items %}
                             <td>
                               {% if period != "total" %}
-                                <div class="form-check">
+                                <div class="">
                                   <button class="button"
                                           id="button_{{ student_name }}_{{ period }}_first"
                                           name="button_{{ student_name }}_{{ period }}_first"
@@ -189,13 +189,13 @@
               return dataStates;
         }
         const periodDataState12 = getDataStateForPeriod("First");
-        console.log("1・2 期間のボタンのdata-state:", periodDataState12);
+        //console.log("1・2 期間のボタンのdata-state:", periodDataState12);
         const periodDataState34 = getDataStateForPeriod("Second");
-        console.log("3・4 期間のボタンのdata-state:", periodDataState34);
+        //console.log("3・4 期間のボタンのdata-state:", periodDataState34);
         const periodDataState56 = getDataStateForPeriod("Third");
-        console.log("5・6 期間のボタンのdata-state:", periodDataState56);
+        //console.log("5・6 期間のボタンのdata-state:", periodDataState56);
         const periodDataState78 = getDataStateForPeriod("Forth");
-        console.log("7・8 期間のボタンのdata-state:", periodDataState78);
+        //console.log("7・8 期間のボタンのdata-state:", periodDataState78);
 
         // ボタン要素を取得
         const buttons = document.querySelectorAll('.button');

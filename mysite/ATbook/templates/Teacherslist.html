@@ -64,14 +64,19 @@
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Full Name</th>
-                                                    {% for date in unique_date %}<th>{{ date }}</th>{% endfor %}
+                                                    <th scope="col">Total</th>
+                                                    {% for date, data in th.items %}
+                                                    {% for info in data%}
+                                                    <th>{{ date }}:{{info}}</th>{% endfor %}{% endfor %}
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        {% for fullname, dates in attendanceinfo.items %}
+                                                        {% for fullname, datas in attendanceinfo.items %}
                                                             <tr>
                                                                 <td>{{ fullname }}</td>
-                                                                {% for dates, info in dates.items %}
+                                                                <td>{{datas.total}}</td>
+                                                                {% for dates, infos in datas.items %}
+                                                                {%for hour ,info in infos.items%}
                                                                     <td>
                                                                         {% if info.first_half == '出席' %}
                                                                             <i class="fas fa-check-circle text-success"></i>
@@ -88,6 +93,7 @@
                                                                             <i class="fas fa-question-circle text-secondary"></i>
                                                                         {% endif %}
                                                                     </td>
+                                                                    {% endfor %}
                                                                 {% endfor %}
                                                             </tr>
                                                         {% endfor %}

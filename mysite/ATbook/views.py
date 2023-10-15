@@ -32,30 +32,37 @@ def Students_list(request):
     unique_dates = None
     unique_students = None
     if request.method == "POST" or request.method == "GET":
-        print(request.POST)
         if request.method != "GET":
             selected_subject = Subject.objects.get(
                 subject=request.POST.get('subject'))
             selected_start = request.POST.get('start_date')
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
-            date__lte=selected_end), subject=selected_subject, student=User.objects.get(full_name=student))
-        unique_dates = set(attendance.date.strftime('%Y-%m-%d')
-                           for attendance in attendanceinfo)
-        print(unique_dates)
+            date__lte=selected_end), subject=selected_subject, student=User.objects.get(full_name=student)).order_by('date','-time')
+        unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
+                           for attendance in attendanceinfo))
         unique_students = set(
             attendance.student.full_name for attendance in attendanceinfo)
         for students in unique_students:
             dict_attend[students] = {}
-            for dates in unique_dates:
-                dict_attend[students][dates] = {'first_half': None,
+            dict_attend[students]['total'] = 0
+            for data in attendanceinfo:
+                dict_attend[students][data.date.strftime('%Y-%m-%d')] = {}
+                dict_attend[students][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': None,
                                                         'latter_half': None,
                                                         }
         for data in attendanceinfo:
-            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')] = {'first_half': data.first_half.type,
+            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': data.first_half.type,
                                                                                            'latter_half': data.latter_half.type,
                                                                                            }
-        print(dict_attend)
+            if selected_subject.subject != 'HR':
+                if data.first_half.type == '欠席':
+                    dict_attend[data.student.full_name]['total'] += 1
+                if data.latter_half.type == '欠席':
+                    dict_attend[data.student.full_name]['total'] += 1
+            else:
+                if data.first_half.type == '欠席': 
+                    dict_attend[data.student.full_name]['total'] += 1
 
     menu_items = [
         {'name': 'Logout', 'url': reverse('loginapp:logout')},
@@ -86,36 +93,57 @@ def Teachers_list(request):
     selected_end = next_date.strftime("%Y-%m-%d")
     attendanceinfo = []
     dict_attend = {}
+    th = {}
     teacher = user.full_name
     unique_dates = None
     unique_students = None
 
     if request.method == "POST" or request.method == "GET":
-        print(request.POST)
         if request.method != "GET":
             selected_subject = Subject.objects.get(
             subject=request.POST.get('subject'))
             selected_start = request.POST.get('start_date')
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
-            date__lte=selected_end), subject=selected_subject)
-        unique_dates = set(attendance.date.strftime('%Y-%m-%d') for attendance in attendanceinfo)
-        print(unique_dates)
+            date__lte=selected_end), subject=selected_subject).order_by('date','-time')
+        unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
+                           for attendance in attendanceinfo))
         unique_students = set(
             attendance.student.full_name for attendance in attendanceinfo)
+        for dated in unique_dates:
+            th[dated] = set()  # 各日付をキーとした空のリストを th ディクショナリに追加
+
+        for data2 in attendanceinfo:
+            dated = data2.date.strftime('%Y-%m-%d')  # data2 の日付をフォーマット
+            hour = data2.time.hour  # data2 の時間を取得
+
+            if dated in th:
+                th[dated].add(hour)  # リストに時間を追加
+
+        print(th)
+
         for students in unique_students:
             dict_attend[students] = {}
+            dict_attend[students]['total'] = 0
 
-            for dates in unique_dates:
-                dict_attend[students][dates] = {'first_half': None,
+            for dates in attendanceinfo:
+                dict_attend[students][dates.date.strftime('%Y-%m-%d')] = {}
+                dict_attend[students][dates.date.strftime('%Y-%m-%d')][dates.time.hour] = {'first_half': None,
                                                         'latter_half': None,
                                                         }
         for data in attendanceinfo:
-            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')] = {'first_half': data.first_half.type,
+            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': data.first_half.type,
                                                                                            'latter_half': data.latter_half.type,
-                                                                                           }
+            }
+            if selected_subject.subject != 'HR':
+                if data.first_half.type == '欠席':
+                    dict_attend[data.student.full_name]['total'] += 1
+                if data.latter_half.type == '欠席':
+                    dict_attend[data.student.full_name]['total'] += 1
+            else:
+                if data.first_half.type == '欠席': 
+                    dict_attend[data.student.full_name]['total'] += 1
         print(dict_attend)
-
     menu_items = [
         {'name': 'Logout', 'url': reverse('loginapp:logout')},
         {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
@@ -124,7 +152,7 @@ def Teachers_list(request):
     ]
     context = {
         'subjects': subjects,
-        'unique_date': unique_dates,
+        'th': th,
         'selected_subject': selected_subject,
         'selected_start': selected_start,
         'selected_end': selected_end,
