@@ -121,8 +121,10 @@ def Teachers_list(request):
 
         for data in attendanceinfo:
             dict_attend[data.student.full_name] = {}
+        for data in attendanceinfo:
             dict_attend[data.student.full_name]['total'] = 0
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')] = {}
+        print(dict_attend)
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': None,
                                                         'latter_half': None,
@@ -183,6 +185,8 @@ def Attend_def(request):
         many_date.append(today_date)
     messeage = None
     selected_date = request.session.get("selected_date")
+    if request.session.get("selected_date") == None:
+        selected_date = today_date
     request.session["selected_date"] = today_date
     selected_department = 'CS'
     selected_department = Department.objects.get(name=selected_department)
