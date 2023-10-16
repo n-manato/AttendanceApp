@@ -38,9 +38,9 @@ def Students_list(request):
             selected_start = request.POST.get('start_date')
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
-            date__lte=selected_end), subject=selected_subject, student=User.objects.get(full_name=student)).order_by('date','time')
+            date__lte=selected_end), subject=selected_subject, student=User.objects.get(full_name=student)).order_by('date', 'time')
         unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
-                           for attendance in attendanceinfo))
+                                  for attendance in attendanceinfo))
         unique_students = set(
             attendance.student.full_name for attendance in attendanceinfo)
         for students in unique_students:
@@ -50,19 +50,19 @@ def Students_list(request):
                 dict_attend[students][data.date.strftime('%Y-%m-%d')] = {}
             for data in attendanceinfo:
                 dict_attend[students][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': None,
-                                                        'latter_half': None,
-                                                        }
+                                                                                         'latter_half': None,
+                                                                                         }
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': data.first_half.type,
-                                                                                           'latter_half': data.latter_half.type,
-                                                                                           }
+                                                                                                   'latter_half': data.latter_half.type,
+                                                                                                   }
             if selected_subject.subject != 'HR':
                 if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
                 if data.latter_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
             else:
-                if data.first_half.type == '欠席': 
+                if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
 
     menu_items = [
@@ -101,14 +101,14 @@ def Teachers_list(request):
     if request.method == "POST" or request.method == "GET":
         if request.method != "GET":
             selected_subject = Subject.objects.get(
-            subject=request.POST.get('subject'))
+                subject=request.POST.get('subject'))
             selected_start = request.POST.get('start_date')
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
-            date__lte=selected_end), subject=selected_subject).order_by('date','time')
+            date__lte=selected_end), subject=selected_subject).order_by('date', 'time')
         unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
-                           for attendance in attendanceinfo))
-        
+                                  for attendance in attendanceinfo))
+
         for dated in unique_dates:
             th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
 
@@ -123,23 +123,23 @@ def Teachers_list(request):
             dict_attend[data.student.full_name] = {}
         for data in attendanceinfo:
             dict_attend[data.student.full_name]['total'] = 0
-            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')] = {}
-        print(dict_attend)
+            dict_attend[data.student.full_name][data.date.strftime(
+                '%Y-%m-%d')] = {}
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': None,
-                                                        'latter_half': None,
-                                                        }
+                                                                                                   'latter_half': None,
+                                                                                                   }
         for data in attendanceinfo:
-            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': data.first_half.type,
-                                                                                           'latter_half': data.latter_half.type,
-            }
+            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
+                'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
+            print(dict_attend)
             if selected_subject.subject != 'HR':
                 if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
                 if data.latter_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
             else:
-                if data.first_half.type == '欠席': 
+                if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
     menu_items = [
         {'name': 'Logout', 'url': reverse('loginapp:logout')},
@@ -209,7 +209,6 @@ def Attend_def(request):
         selected_department = Department.objects.get(name=selected_department)
         dict_attend = {}
 
-
         if 'date-select' in request.POST or request.method == 'GET':
             # POSTリクエストがドロップダウンから送信された場合の処理
             if request.POST.get('date-select') == "" and request.method != 'GET':
@@ -231,8 +230,8 @@ def Attend_def(request):
                         total_leave = 0
                         total_absent = 0
                         total_present = 0
-                    totals = Total.objects.filter(student = student)
-                    dict_attend[student.full_name]["total"] ="0/0/0"
+                    totals = Total.objects.filter(student=student)
+                    dict_attend[student.full_name]["total"] = "0/0/0"
 
                     for total in totals:
                         total_late += total.late
@@ -240,7 +239,7 @@ def Attend_def(request):
                         total_absent += total.absent
                         total_present += total.present
                     dict_attend[student.full_name]["total"] = f"{total_late}/{total_leave}/{total_absent}"
-                    
+
                     for times in time_data:
                         if times.hour not in dict_attend[student.full_name]:
                             dict_attend[student.full_name][times.hour] = {
@@ -274,7 +273,7 @@ def Attend_def(request):
                         subject=subject_instance)
                     sub_teacher = request.user
                     hour = item['hour']
-                    first_half = item['first_half']                        
+                    first_half = item['first_half']
                     if first_half == '1':
                         first_half = Attend.objects.get(type='出席')
                     elif first_half == '2':
@@ -286,14 +285,13 @@ def Attend_def(request):
                     if latter_half == '1':
                         latter_half = Attend.objects.get(type='出席')
                     elif latter_half == '2':
-                        latter_half = Attend.objects.get(type='欠席') 
+                        latter_half = Attend.objects.get(type='欠席')
                     else:
                         latter_half = None
                     print(student)
                     print(hour)
                     print(first_half)
                     print(latter_half)
-
                     if first_half is None or latter_half is None:
                         condition = Q(student__full_name=student) & Q(
                             time__hour=hour) & Q(date=selected_date)
@@ -312,7 +310,14 @@ def Attend_def(request):
                                 'subject': subject_instance,
                             }
                         )
-                        
+                else:
+                    student = item['student']
+                    hour = item['hour']
+                    condition = Q(student__full_name=student) & Q(
+                        time__hour=hour) & Q(date=selected_date)
+                    AttendanceInfo.objects.filter(condition).delete()
+                    print('データセットを削除しました。')
+
             for student in students:
                 count = 0
                 first_flag = 0
@@ -322,9 +327,9 @@ def Attend_def(request):
                 leave = 0
                 absent = 0
                 present = 0
-                
+
                 totalling = AttendanceInfo.objects.filter(
-                    date = selected_date, student = student).order_by('time')
+                    date=selected_date, student=student).order_by('time')
                 print(student)
                 for data in totalling:
                     print(data.first_half.type)
@@ -341,7 +346,7 @@ def Attend_def(request):
                 print(last_flag)
                 if middle_flag == 1:
                     if first_flag + last_flag == 2:
-                        print('遅刻&早退') 
+                        print('遅刻&早退')
                         late = 1
                         leave = 1
                     elif first_flag == 1:
@@ -357,17 +362,15 @@ def Attend_def(request):
                     print('出席')
                     present = 1
                 Total.objects.update_or_create(
-                            student=student,
-                            date = selected_date,
-                            defaults={
-                                'late': late,
-                                'leave': leave,
-                                'absent': absent,
-                                'present': present,
-                            }
-                        )
-                
-
+                    student=student,
+                    date=selected_date,
+                    defaults={
+                        'late': late,
+                        'leave': leave,
+                        'absent': absent,
+                        'present': present,
+                    }
+                )
 
                 # データベースへの格納が成功したかどうかを確認
             redirect_url = reverse('ATbook:Attenddef')
