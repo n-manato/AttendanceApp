@@ -108,6 +108,10 @@ def Teachers_list(request):
             date__lte=selected_end), subject=selected_subject).order_by('date', 'time')
         unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
                                   for attendance in attendanceinfo))
+        unique_hour = sorted(
+            set(attendance.time.hour for attendance in attendanceinfo))
+        unique_students = set(
+            attendance.student.full_name for attendance in attendanceinfo)
 
         for dated in unique_dates:
             th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
@@ -119,20 +123,22 @@ def Teachers_list(request):
             if hour not in th[dated]:
                 th[dated].append(hour)  # リストに時間を追加
 
-        for data in attendanceinfo:
-            dict_attend[data.student.full_name] = {}
-        for data in attendanceinfo:
-            dict_attend[data.student.full_name]['total'] = 0
-            dict_attend[data.student.full_name][data.date.strftime(
-                '%Y-%m-%d')] = {}
-        for data in attendanceinfo:
-            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {'first_half': None,
-                                                                                                   'latter_half': None,
-                                                                                                   }
+        for data in unique_students:
+            dict_attend[data] = {}
+            for dates in unique_dates:
+                dict_attend[data]['total'] = 0
+                dict_attend[data][dates] = {}
+                for hour in unique_hour:
+                    dict_attend[data][dates][hour] = {'first_half': None,
+                                                      'latter_half': None,
+                                                      }
+        for tmp in dict_attend:
+            print(tmp['data'])
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
                 'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
-            print(dict_attend)
+            # print(dict_attend)
+
             if selected_subject.subject != 'HR':
                 if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
