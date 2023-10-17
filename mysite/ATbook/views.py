@@ -132,8 +132,8 @@ def Teachers_list(request):
                     dict_attend[data][dates][hour] = {'first_half': None,
                                                       'latter_half': None,
                                                       }
-        for tmp in dict_attend:
-            print(tmp['data'])
+        # for tmp in dict_attend[]:
+            # print(tmp)
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
                 'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
