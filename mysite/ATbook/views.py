@@ -105,14 +105,12 @@ def Teachers_list(request):
             selected_start = request.POST.get('start_date')
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
-            date__lte=selected_end), subject=selected_subject).order_by('date', 'time')
+            date__lte=selected_end), subject=selected_subject).order_by('date', 'time', 'student__username')
         unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
                                   for attendance in attendanceinfo))
-        unique_hour = sorted(
-            set(attendance.time.hour for attendance in attendanceinfo))
         unique_students = set(
             attendance.student.full_name for attendance in attendanceinfo)
-
+        print(unique_students)
         for dated in unique_dates:
             th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
 
@@ -133,13 +131,13 @@ def Teachers_list(request):
                 hour = data2.time.hour  # data2 の時間を取得
                 if hour not in dict_attend[data][dates]:
                     dict_attend[data][dates][hour] = {'first_half': None,
-                                                    'latter_half': None,
-                                                    }
+                                                      'latter_half': None,
+                                                      }
+        print(dict_attend)
 
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
                 'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
-            print(dict_attend)
 
             if selected_subject.subject != 'HR':
                 if data.first_half.type == '欠席':
@@ -149,6 +147,7 @@ def Teachers_list(request):
             else:
                 if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
+        print(dict_attend)
     menu_items = [
         {'name': 'Logout', 'url': reverse('loginapp:logout')},
         {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},

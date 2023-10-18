@@ -70,7 +70,7 @@
                           <th>{{ date }}:{{hour}}</th>{% endfor %}{% endfor %}{% endfor %}
                         </thead>
                         <tbody>
-                          <tr>
+
                             {% for fullname, datas in attendanceinfo.items %}
                               <tr>
                                 <td>{{datas.total}}</td>
@@ -97,7 +97,7 @@
                                 {% endfor %}
                               </tr>
                             {% endfor %}
-                          </tr>
+
                         </tbody>
                       </table>
                     </div>
