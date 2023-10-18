@@ -128,16 +128,18 @@ def Teachers_list(request):
             for dates in unique_dates:
                 dict_attend[data]['total'] = 0
                 dict_attend[data][dates] = {}
-                for hour in unique_hour:
+            for data2 in attendanceinfo:
+                dates = data2.date.strftime('%Y-%m-%d')  # data2 の日付をフォーマット
+                hour = data2.time.hour  # data2 の時間を取得
+                if hour not in dict_attend[data][dates]:
                     dict_attend[data][dates][hour] = {'first_half': None,
-                                                      'latter_half': None,
-                                                      }
-        # for tmp in dict_attend[]:
-            # print(tmp)
+                                                    'latter_half': None,
+                                                    }
+
         for data in attendanceinfo:
             dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
                 'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
-            # print(dict_attend)
+            print(dict_attend)
 
             if selected_subject.subject != 'HR':
                 if data.first_half.type == '欠席':
