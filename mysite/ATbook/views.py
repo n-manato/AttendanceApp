@@ -83,8 +83,79 @@ def Students_list(request):
 
 
 @user_passes_test(lambda u: u.groups.filter(name__in=['HomeroomTeacher', 'SubjectTeacher']).exists(), login_url='')
+def Teachers_list2(request):
+    if request.method == "POST" or request.method == "GET":
+        today_date = date.today()
+        selected_date = today_date
+        attendanceinfo = AttendanceInfo.objects.filter(
+            date=today_date).order_by('date', 'time', 'student__username')
+        attendance_dict = {}
+        subject_list = []
+
+        selected_department = 'CS'
+        selected_department = Department.objects.get(name=selected_department)
+        students = User.objects.filter(
+            departments__name=selected_department, groups__name='Student')
+
+        print(request.POST)
+
+        if 'select_date' in request.POST:
+            selected_date = request.POST.get('select_date')
+            attendanceinfo = AttendanceInfo.objects.filter(
+                date=selected_date).order_by('date', 'time', 'student__username')
+
+        for student in students:
+            if student.full_name not in attendance_dict:
+                attendance_dict[student.full_name] = {}
+            total_late = 0
+            total_leave = 0
+            total_absent = 0
+            total_present = 0
+            totals = Total.objects.filter(student=student)
+            attendance_dict[student.full_name]["total"] = "0/0/0"
+
+            for total in totals:
+                total_late += total.late
+                total_leave += total.leave
+                total_absent += total.absent
+                total_present += total.present
+            attendance_dict[student.full_name]["total"] = f"{total_late}/{total_leave}/{total_absent}"
+
+    for data in attendanceinfo:
+        subject = data.subject.subject
+        student_name = data.student.full_name
+
+        # 学生の出席情報を追加する
+        if subject not in subject_list:
+            subject_list.append(subject)
+
+        if student_name not in attendance_dict:
+            attendance_dict[student_name] = {}
+
+        attendance_dict[student_name][subject] = {
+            'first_half': data.first_half.type,
+            'latter_half': data.latter_half.type,
+        }
+
+    print(subject_list)
+    print(attendance_dict)
+    menu_items = [
+        {'name': 'Logout', 'url': reverse('loginapp:logout')},
+        {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
+        {'name': 'Attend Definition', 'url': reverse('ATbook:Attenddef')},
+        {'name': 'Admin', 'url': reverse('admin:index')},
+    ]
+    context = {
+        'menu_items': menu_items,
+        'attendance_dict': attendance_dict,
+        'subject_list': subject_list,
+        'selected_date': selected_date,
+    }
+    return render(request, 'Teacherslist2.html', context)
+
+
+@user_passes_test(lambda u: u.groups.filter(name__in=['HomeroomTeacher', 'SubjectTeacher']).exists(), login_url='')
 def Teachers_list(request):
-    # 必要なデータを取得してコンテキストに追加する
     user = request.user
     subjects = user.Subject.all()
     today_date = date.today()
@@ -110,6 +181,7 @@ def Teachers_list(request):
                                   for attendance in attendanceinfo))
         unique_students = set(
             attendance.student.full_name for attendance in attendanceinfo)
+
         print(unique_students)
         for dated in unique_dates:
             th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
