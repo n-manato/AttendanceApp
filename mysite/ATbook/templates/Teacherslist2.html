@@ -47,27 +47,6 @@
                                                     <tr>
                                                         <td>{{ fullname }}</td>
                                                         <td>{{ subject.total }}</td>
-                                                        {% for subject, attendacne in subject.items %}
-                                                            {% if subject != "total" %}
-                                                                <td>
-                                                                    {{ latter_half }}
-                                                                    {% if attendacne.first_half == '出席' %}
-                                                                        <i class="fas fa-check-circle text-success"></i>
-                                                                    {% elif attendacne.first_half == '欠席' %}
-                                                                        <i class="fas fa-times-circle text-danger"></i>
-                                                                    {% elif attendacne.first_half == None %}
-                                                                        <i class="fas fa-question-circle text-secondary"></i>
-                                                                    {% endif %}
-                                                                    {% if attendacne.latter_half == '出席' %}
-                                                                        <i class="fas fa-check-circle text-success"></i>
-                                                                    {% elif attendacne.latter_half == '欠席' %}
-                                                                        <i class="fas fa-times-circle text-danger"></i>
-                                                                    {% elif attendacne.latter_half == None %}
-                                                                        <i class="fas fa-question-circle text-secondary"></i>
-                                                                    {% endif %}
-                                                                </td>
-                                                            {% endif %}
-                                                        {% endfor %}
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>

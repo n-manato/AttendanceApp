@@ -87,22 +87,18 @@ def Teachers_list2(request):
     if request.method == "POST" or request.method == "GET":
         today_date = date.today()
         selected_date = today_date
-        attendanceinfo = AttendanceInfo.objects.filter(
-            date=today_date).order_by('date', 'time', 'student__username')
         attendance_dict = {}
         subject_list = []
 
         selected_department = 'CS'
         selected_department = Department.objects.get(name=selected_department)
         students = User.objects.filter(
-            departments__name=selected_department, groups__name='Student')
+            departments__name=selected_department, groups__name='Student').order_by('username')
 
         print(request.POST)
 
         if 'select_date' in request.POST:
             selected_date = request.POST.get('select_date')
-            attendanceinfo = AttendanceInfo.objects.filter(
-                date=selected_date).order_by('date', 'time', 'student__username')
 
         for student in students:
             if student.full_name not in attendance_dict:
@@ -111,7 +107,15 @@ def Teachers_list2(request):
             total_leave = 0
             total_absent = 0
             total_present = 0
-            totals = Total.objects.filter(student=student)
+            next_date = today_date - timedelta(200)
+            selected_start = next_date.strftime("%Y-%m-%d")
+            selected_end = today_date.strftime("%Y-%m-%d")
+            # if request.method == "POST":
+            #    selected_start = request.POST.get('start_date')
+            #    selected_end = request.POST.get('end_date')
+
+            totals = Total.objects.filter(Q(date__gte=selected_start) & Q(
+                date__lte=selected_end), student=student)
             attendance_dict[student.full_name]["total"] = "0/0/0"
 
             for total in totals:
@@ -120,22 +124,6 @@ def Teachers_list2(request):
                 total_absent += total.absent
                 total_present += total.present
             attendance_dict[student.full_name]["total"] = f"{total_late}/{total_leave}/{total_absent}"
-
-    for data in attendanceinfo:
-        subject = data.subject.subject
-        student_name = data.student.full_name
-
-        # 学生の出席情報を追加する
-        if subject not in subject_list:
-            subject_list.append(subject)
-
-        if student_name not in attendance_dict:
-            attendance_dict[student_name] = {}
-
-        attendance_dict[student_name][subject] = {
-            'first_half': data.first_half.type,
-            'latter_half': data.latter_half.type,
-        }
 
     print(subject_list)
     print(attendance_dict)
@@ -147,9 +135,9 @@ def Teachers_list2(request):
     ]
     context = {
         'menu_items': menu_items,
-        'attendance_dict': attendance_dict,
         'subject_list': subject_list,
         'selected_date': selected_date,
+        'attendance_dict': attendance_dict,
     }
     return render(request, 'Teacherslist2.html', context)
 
@@ -177,49 +165,55 @@ def Teachers_list(request):
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
             date__lte=selected_end), subject=selected_subject).order_by('date', 'time', 'student__username')
+        print(attendanceinfo)
         unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
                                   for attendance in attendanceinfo))
-        unique_students = set(
-            attendance.student.full_name for attendance in attendanceinfo)
+        selected_department = 'CS'
+        selected_department = Department.objects.get(name=selected_department)
+        users_in_department = User.objects.filter(
+            departments__name=selected_department, groups__name='Student').order_by('username')
+        unique_students = list(users_in_department.values_list(
+            'full_name', flat=True).distinct())
 
         print(unique_students)
-        for dated in unique_dates:
-            th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
+        if request.method == "POST":
+            for dated in unique_dates:
+                th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
 
-        for data2 in attendanceinfo:
-            dated = data2.date.strftime('%Y-%m-%d')  # data2 の日付をフォーマット
-            hour = data2.time.hour  # data2 の時間を取得
-
-            if hour not in th[dated]:
-                th[dated].append(hour)  # リストに時間を追加
-
-        for data in unique_students:
-            dict_attend[data] = {}
-            for dates in unique_dates:
-                dict_attend[data]['total'] = 0
-                dict_attend[data][dates] = {}
             for data2 in attendanceinfo:
-                dates = data2.date.strftime('%Y-%m-%d')  # data2 の日付をフォーマット
+                dated = data2.date.strftime('%Y-%m-%d')  # data2 の日付をフォーマット
                 hour = data2.time.hour  # data2 の時間を取得
-                if hour not in dict_attend[data][dates]:
-                    dict_attend[data][dates][hour] = {'first_half': None,
-                                                      'latter_half': None,
-                                                      }
-        print(dict_attend)
 
-        for data in attendanceinfo:
-            dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
-                'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
+                if hour not in th[dated]:
+                    th[dated].append(hour)  # リストに時間を追加
 
-            if selected_subject.subject != 'HR':
-                if data.first_half.type == '欠席':
-                    dict_attend[data.student.full_name]['total'] += 1
-                if data.latter_half.type == '欠席':
-                    dict_attend[data.student.full_name]['total'] += 1
-            else:
-                if data.first_half.type == '欠席':
-                    dict_attend[data.student.full_name]['total'] += 1
-        print(dict_attend)
+            for data in unique_students:
+                dict_attend[data] = {}
+                for dates in unique_dates:
+                    dict_attend[data]['total'] = 0
+                    dict_attend[data][dates] = {}
+                for data2 in attendanceinfo:
+                    dates = data2.date.strftime('%Y-%m-%d')  # data2 の日付をフォーマット
+                    hour = data2.time.hour  # data2 の時間を取得
+                    if hour not in dict_attend[data][dates]:
+                        dict_attend[data][dates][hour] = {'first_half': None,
+                                                          'latter_half': None,
+                                                          }
+            print(dict_attend)
+
+            for data in attendanceinfo:
+                dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
+                    'first_half': data.first_half.type, 'latter_half': data.latter_half.type, }
+
+                if selected_subject.subject != 'HR':
+                    if data.first_half.type == '欠席':
+                        dict_attend[data.student.full_name]['total'] += 1
+                    if data.latter_half.type == '欠席':
+                        dict_attend[data.student.full_name]['total'] += 1
+                else:
+                    if data.first_half.type == '欠席':
+                        dict_attend[data.student.full_name]['total'] += 1
+            print(dict_attend)
     menu_items = [
         {'name': 'Logout', 'url': reverse('loginapp:logout')},
         {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
