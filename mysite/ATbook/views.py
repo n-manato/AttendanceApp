@@ -8,7 +8,9 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import user_passes_test
 from django.urls import reverse
 from datetime import datetime, timedelta, date
+import csv
 import json
+import pandas as pd
 from django.db.models import Q
 
 
@@ -23,7 +25,7 @@ def Students_list(request):
     subjects = user.Subject.all()
     today_date = date.today()
     next_date = today_date + timedelta(1)
-    selected_subject = subjects.last()
+    selected_subject = None
     selected_start = today_date.strftime("%Y-%m-%d")
     selected_end = next_date.strftime("%Y-%m-%d")
     attendanceinfo = []
@@ -66,8 +68,9 @@ def Students_list(request):
                     dict_attend[data.student.full_name]['total'] += 1
 
     menu_items = [
-        {'name': 'Logout', 'url': reverse('loginapp:logout')},
-        {'name': 'Students List', 'url': reverse('ATbook:Studentslist')},
+        
+        {'name': '集計', 'url': reverse('ATbook:Studentslist')},
+        {'name': 'ログアウト', 'url': reverse('loginapp:logout')},
     ]
     context = {
         'subjects': subjects,
@@ -85,8 +88,9 @@ def Students_list(request):
 @user_passes_test(lambda u: u.groups.filter(name__in=['HomeroomTeacher', 'SubjectTeacher']).exists(), login_url='')
 def Teachers_list2(request):
     if request.method == "POST" or request.method == "GET":
+        user = request.user
+        username = user.full_name
         today_date = date.today()
-        selected_date = today_date
         attendance_dict = {}
         subject_list = []
 
@@ -96,9 +100,6 @@ def Teachers_list2(request):
             departments__name=selected_department, groups__name='Student').order_by('username')
 
         print(request.POST)
-
-        if 'select_date' in request.POST:
-            selected_date = request.POST.get('select_date')
 
         for student in students:
             if student.full_name not in attendance_dict:
@@ -110,9 +111,9 @@ def Teachers_list2(request):
             next_date = today_date - timedelta(200)
             selected_start = next_date.strftime("%Y-%m-%d")
             selected_end = today_date.strftime("%Y-%m-%d")
-            # if request.method == "POST":
-            #    selected_start = request.POST.get('start_date')
-            #    selected_end = request.POST.get('end_date')
+            if request.method != "GET":
+                selected_start = request.POST.get('start_date')
+                selected_end = request.POST.get('end_date')
 
             totals = Total.objects.filter(Q(date__gte=selected_start) & Q(
                 date__lte=selected_end), student=student)
@@ -125,18 +126,45 @@ def Teachers_list2(request):
                 total_present += total.present
             attendance_dict[student.full_name]["total"] = f"{total_late}/{total_leave}/{total_absent}"
 
+        if 'download' in request.POST:
+            print(attendance_dict)
+            data_list = []
+            for name, data in attendance_dict.items():
+                print(data)
+                for dates, values in data.items():
+                    print(values)
+                    data_list.append({'Name':name,'value':values})
+                    
+            # リストからDataFrameを作成
+            df = pd.DataFrame(data_list)
+
+            # CSVファイルに変換してレスポンスを作成
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="attendance_data.csv"'
+
+            # DataFrameをCSVに変換してHTTPレスポンスとして返す
+            df.to_csv(response, encoding='utf-8', index=False)
+
+            return response
+
     print(subject_list)
     print(attendance_dict)
     menu_items = [
-        {'name': 'Logout', 'url': reverse('loginapp:logout')},
-        {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
-        {'name': 'Attend Definition', 'url': reverse('ATbook:Attenddef')},
-        {'name': 'Admin', 'url': reverse('admin:index')},
+        {'name': '科目ごとの集計', 'url': reverse('ATbook:Teacherslist')},
+        {'name': '出欠登録', 'url': reverse('ATbook:Attenddef')},
+        {'name': 'ログアウト', 'url': reverse('loginapp:logout')},
     ]
+    if user.is_staff:
+        menu_items.insert(2, {'name': '管理者', 'url': reverse('admin:index')})
+    if user.groups.filter(name='HomeroomTeacher').exists():
+        menu_items.insert(1, {'name': '遅/早/休の集計', 'url': reverse('ATbook:Teacherslist2')})
+
     context = {
         'menu_items': menu_items,
+        'username': username,
         'subject_list': subject_list,
-        'selected_date': selected_date,
+        'selected_start': selected_start,
+        'selected_end': selected_end,
         'attendance_dict': attendance_dict,
     }
     return render(request, 'Teacherslist2.html', context)
@@ -148,7 +176,7 @@ def Teachers_list(request):
     subjects = user.Subject.all()
     today_date = date.today()
     next_date = today_date + timedelta(1)
-    selected_subject = subjects.last()
+    selected_subject = None
     selected_start = today_date.strftime("%Y-%m-%d")
     selected_end = next_date.strftime("%Y-%m-%d")
     attendanceinfo = []
@@ -165,7 +193,6 @@ def Teachers_list(request):
             selected_end = request.POST.get('end_date')
         attendanceinfo = AttendanceInfo.objects.filter(Q(date__gte=selected_start) & Q(
             date__lte=selected_end), subject=selected_subject).order_by('date', 'time', 'student__username')
-        print(attendanceinfo)
         unique_dates = sorted(set(attendance.date.strftime('%Y-%m-%d')
                                   for attendance in attendanceinfo))
         selected_department = 'CS'
@@ -175,7 +202,6 @@ def Teachers_list(request):
         unique_students = list(users_in_department.values_list(
             'full_name', flat=True).distinct())
 
-        print(unique_students)
         if request.method == "POST":
             for dated in unique_dates:
                 th[dated] = []  # 各日付をキーとした空のリストを th ディクショナリに追加
@@ -199,7 +225,6 @@ def Teachers_list(request):
                         dict_attend[data][dates][hour] = {'first_half': None,
                                                           'latter_half': None,
                                                           }
-            print(dict_attend)
 
             for data in attendanceinfo:
                 dict_attend[data.student.full_name][data.date.strftime('%Y-%m-%d')][data.time.hour] = {
@@ -213,13 +238,34 @@ def Teachers_list(request):
                 else:
                     if data.first_half.type == '欠席':
                         dict_attend[data.student.full_name]['total'] += 1
-            print(dict_attend)
+            
+            if 'download' in request.POST:
+                data_list = []
+                for name, data in dict_attend.items():
+                    for dates, values in data.items():
+                        if dates != 'total':
+                            for datas2, values2 in values.items():
+                                data_list.append({'Name': name, 'Date': dates, 'hour': datas2, 'first_half': values2['first_half'] if values2['first_half'] is not None else "None", 'latter_half': values2['latter_half'] if values2['latter_half'] is not None else "None",'Subject': selected_subject.subject})             
+                # リストからDataFrameを作成
+                df = pd.DataFrame(data_list)
+                # CSVファイルに変換してレスポンスを作成
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename="attendance_data.csv"'
+                # DataFrameをCSVに変換してHTTPレスポンスとして返す
+                df.to_csv(response, encoding='utf-8', index=False)
+                return response
+                
+
     menu_items = [
-        {'name': 'Logout', 'url': reverse('loginapp:logout')},
-        {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
-        {'name': 'Attend Definition', 'url': reverse('ATbook:Attenddef')},
-        {'name': 'Admin', 'url': reverse('admin:index')},
+        {'name': '科目ごとの集計', 'url': reverse('ATbook:Teacherslist')},
+        {'name': '出欠登録', 'url': reverse('ATbook:Attenddef')},
+        {'name': 'ログアウト', 'url': reverse('loginapp:logout')},
     ]
+    if user.is_staff:
+        menu_items.insert(2, {'name': '管理者', 'url': reverse('admin:index')})
+    if user.groups.filter(name='HomeroomTeacher').exists():
+        menu_items.insert(1, {'name': '遅/早/休の集計', 'url': reverse('ATbook:Teacherslist2')})
+
     context = {
         'subjects': subjects,
         'th': th,
@@ -265,12 +311,11 @@ def Attend_def(request):
     selected_department = Department.objects.get(name=selected_department)
     dict_attend = {}
     students = User.objects.filter(
-        departments__name=selected_department, groups__name='Student')
+        departments__name=selected_department, groups__name='Student').order_by('username')
     full_names = [student.full_name for student in students]
     time_hours = Hour.objects.all()
     time_hour_name = [time_hour.hour for time_hour in time_hours]
 
-    # POST時の処理
     if request.method == "POST" or request.method == 'GET':
         if request.method == "POST":
             success_message = None
@@ -293,9 +338,14 @@ def Attend_def(request):
                 attendance_info = AttendanceInfo.objects.filter(
                     date=selected_date, student__departments=selected_department).order_by('time')
                 students = User.objects.filter(
-                    departments__name=selected_department, groups__name='Student')
+                    departments__name=selected_department, groups__name='Student').order_by('username')
 
                 time_data = Hour.objects.all()  # Hourモデルから時間データを取得
+                user_subjects = user.Subject.all()
+                uniqe_subject = []
+                for data in user_subjects:
+                    uniqe_subject.append(data.subject)
+                print(uniqe_subject)
                 for student in students:
                     if student.full_name not in dict_attend:
                         dict_attend[student.full_name] = {}
@@ -312,27 +362,35 @@ def Attend_def(request):
                         total_absent += total.absent
                         total_present += total.present
                     dict_attend[student.full_name]["total"] = f"{total_late}/{total_leave}/{total_absent}"
+                    
 
                     for times in time_data:
                         if times.hour not in dict_attend[student.full_name]:
                             dict_attend[student.full_name][times.hour] = {
-                                'first_half': [], 'latter_half': []}
+                                'first_half': [], 'latter_half': [], 'subject_flag':[]}
                             for data in attendance_info:
                                 if times == data.time and student == data.student:
                                     dict_attend[student.full_name][times.hour]['first_half'].append(
                                         data.first_half.type)
                                     dict_attend[student.full_name][times.hour]['latter_half'].append(
                                         data.latter_half.type)
-                                    selected_subject[times.hour] = data.subject.subject
                                     submit_teacher[times.hour] = data.teacher.full_name
+                                    if data.subject.subject in uniqe_subject:
+                                        dict_attend[student.full_name][times.hour]['subject_flag'] = True
+                                        selected_subject[times.hour] = {'selected_flag': True, 'selected_name': data.subject.subject}
+                                    else:
+                                        dict_attend[student.full_name][times.hour]['subject_flag'] = False
+                                        selected_subject[times.hour] = {'selected_flag': False, 'selected_name': data.subject.subject}
 
-                # ここに遅刻、早退、欠席のフラグを立てるプログラムを生成する
+                print(dict_attend)
+                print(selected_subject)
+                print(subjects)
 
         elif 'submit' in request.POST.get('action'):
             print(request.POST)
             json_data = json.loads(request.POST.get('data'))
             selected_date = request.POST.get('selected_date')
-            success_message = "Data submitted successfully."
+            success_message = "登録データを更新しました。"
             request.session['message'] = success_message
             request.session["selected_date"] = selected_date
             print(selected_date)
@@ -351,6 +409,10 @@ def Attend_def(request):
                         first_half = Attend.objects.get(type='出席')
                     elif first_half == '2':
                         first_half = Attend.objects.get(type='欠席')
+                    elif first_half == '4':
+                        first_half = Attend.objects.get(type='出席')
+                    elif first_half == '5':
+                        first_half = Attend.objects.get(type='欠席')
                     else:
                         first_half = None
 
@@ -358,6 +420,10 @@ def Attend_def(request):
                     if latter_half == '1':
                         latter_half = Attend.objects.get(type='出席')
                     elif latter_half == '2':
+                        latter_half = Attend.objects.get(type='欠席')
+                    elif latter_half == '4':
+                        latter_half = Attend.objects.get(type='出席')
+                    elif latter_half == '5':
                         latter_half = Attend.objects.get(type='欠席')
                     else:
                         latter_half = None
@@ -455,11 +521,18 @@ def Attend_def(request):
             return JsonResponse(response_data, safe=False)
 
     menu_items = [
-        {'name': 'Logout', 'url': reverse('loginapp:logout')},
-        {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
-        {'name': 'Attend Definition', 'url': reverse('ATbook:Attenddef')},
-        {'name': 'Admin', 'url': reverse('admin:index')},
+        {'name': '科目ごとの集計', 'url': reverse('ATbook:Teacherslist')},
+        {'name': '出欠登録', 'url': reverse('ATbook:Attenddef')},
+        {'name': 'ログアウト', 'url': reverse('loginapp:logout')},
     ]
+
+    if user.is_staff:
+        menu_items.insert(2, {'name': '管理者', 'url': reverse('admin:index')})
+    if user.groups.filter(name='HomeroomTeacher').exists():
+        menu_items.insert(1, {'name': '遅/早/休の集計', 'url': reverse('ATbook:Teacherslist2')})
+                
+
+
 
     context = {
         'hour': time_hour_name,
@@ -614,11 +687,18 @@ def Subject_list(request):
             student_data_Second_ldata), len(student_data_Third_fdata), len(student_data_Third_ldata), len(student_data_Forth_fdata), len(student_data_Forth_ldata))
         print(max_len)
     menu_items = [
-        {'name': 'Logout', 'url': reverse('loginapp:logout')},
-        {'name': 'Teachers List', 'url': reverse('ATbook:Teacherslist')},
-        {'name': 'Attend Definition', 'url': reverse('ATbook:Attenddef')},
-        {'name': 'Admin', 'url': reverse('admin:index')},
+        {'name': '科目ごとの集計', 'url': reverse('ATbook:Teacherslist')},
+        {'name': '遅/早/休の集計', 'url': reverse('ATbook:Teacherslist2')},
+        {'name': '出欠登録', 'url': reverse('ATbook:Attenddef')},
+        {'name': '管理者', 'url': reverse('admin:index')},
+        {'name': 'ログアウト', 'url': reverse('loginapp:logout')},
     ]
+
+    user = request.user
+    if user.is_staff:
+        menu_items.insert(2, {'name': '管理者', 'url': reverse('admin:index')})
+    if user.groups.filter(name='HomeroomTeacher').exists():
+        menu_items.insert(1, {'name': '遅/早/休の集計', 'url': reverse('ATbook:Teacherslist2')})
     context = {
         "selected_department": selected_department,
         "selected_date": selected_date,

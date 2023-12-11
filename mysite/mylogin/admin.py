@@ -2,20 +2,21 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import User, Department, Subject, Period, Hour, Date
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin, Group
 from django.contrib import admin
 from django.utils.translation import gettext, gettext_lazy as _
 
 # Register your models here.
-@admin.register(Department)
+'''@admin.register(Department)
 class AdminDepartment(admin.ModelAdmin):
     search_fields = ('name',)
-    pass
+    pass'''
 @admin.register(Subject)
 class AdminDepartment(admin.ModelAdmin):
     search_fields = ('subject',)
+    list_display = ("subject","period","hour","department","date")
     pass
-@admin.register(Period)
+'''@admin.register(Period)
 class AdminDepartment(admin.ModelAdmin):
     pass
 @admin.register(Hour)
@@ -23,7 +24,7 @@ class AdminDepartment(admin.ModelAdmin):
     pass
 @admin.register(Date)
 class AdminDepartment(admin.ModelAdmin):
-    pass
+    pass'''
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
@@ -40,3 +41,5 @@ class UserAdmin(UserAdmin):
     filter_horizontal = ('groups', 'user_permissions')
     filter_vertical = ('departments', 'Subject')
 
+
+admin.site.unregister(Group) #グループ消去

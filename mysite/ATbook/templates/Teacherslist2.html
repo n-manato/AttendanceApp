@@ -18,18 +18,28 @@
                         <div class="container">
                             <div class="row justify-content-center">
                                 <div class="col-12">
-                                    <h1 style="color: white;">Teacher: {{ teacher }}</h1>
+                                    <h1 style="color: white;">アカウント名: {{ username }}</h1>
                                     <form method="POST" id="select-form">
                                         {% csrf_token %}
                                         <div class="row">
                                             <div class="col">
                                                 <div class="form-group">
-                                                    <label for="select-date" class="form-label" style="color: white;">Select Date:</label>
+                                                    <label for="start-date" class="form-label" style="color: white;">開始日:</label>
                                                     <input type="date"
                                                            class="form-control bg-dark text-white border-dark"
-                                                           id="select_date"
-                                                           name="select_date"
-                                                           {% if selected_date %}value="{{ selected_date }}"{% endif %}>
+                                                           id="start_date"
+                                                           name="start_date"
+                                                           {% if selected_start %}value="{{ selected_start }}"{% endif %}>
+                                                </div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <label for="end-date" class="form-label" style="color: white;">終了日:</label>
+                                                    <input type="date"
+                                                           class="form-control bg-dark text-white border-dark"
+                                                           id="end_date"
+                                                           name="end_date"
+                                                           {% if selected_end %}value="{{ selected_end }}"{% endif %}>
                                                 </div>
                                             </div>
                                         </div>
@@ -38,8 +48,8 @@
                                     <div class="table-responsive table-container">
                                         <table id="student-table" class="table table-dark table-bordered mb-0">
                                             <thead>
-                                                <th scope="col">Full Name</th>
-                                                <th scope="col">Total</th>
+                                                <th scope="col">氏名</th>
+                                                <th scope="col">遅/早/休</th>
                                                 {% for subject_data in subject_list %}<th>{{ subject_data }}</th>{% endfor %}
                                             </thead>
                                             <tbody>
@@ -53,35 +63,62 @@
                                         </table>
                                     </div>
                                 </div>
+                                <form method="POST" id="select-form2">
+                                    {% csrf_token %}
                                 <div class="row justify-content-center mt-3">
                                     <div class="col-6">
-                                        <button type="csv" id="csv-btn" class="btn btn-primary w-100" name="csv">Download CSV</button>
+                                        
+                                        <button type="submit"
+                                        id="csv-btn"
+                                        class="btn btn-primary w-100"
+                                        name="download"
+                                        value="csv">CSVをダウンロード</button>
+                                        <input type="hidden" name="download" value="download">
+                                    
                                     </div>
-                                </div>
+                            </div>
+                        </form>
                             </div>
                         </div>
                     </div>
                 </section>
             {% endblock %}
             {% block scripts %}
-                <script src="{% static 'js/jquery.min.js' %}"></script>
+            <script src="{% static 'js/jquery.min.js' %}"></script>
                 <script>
-$(document).ready(function() {
-    var csrftoken = "{{ csrf_token }}";
-
-    function sendPOSTRequest() {
-        var selectedDate = $("#select_date").val();
-        if (selectedDate !== "") {
-            $("#select-form").submit();
-        }
-    }
-
-    // ドロップダウンメニューの変更を監視
-    $("#select_date").change(function() {
-        event.preventDefault();
-        sendPOSTRequest(); // ドロップダウンメニューが変更されたらフォームを送信
-    });
-});
+                $(document).ready(function() {
+                var csrftoken = "{{ csrf_token }}";
+                function sendPOSTRequest() {
+                    var startDate = $("#start_date").val();
+                    var endDate = $("#end_date").val();
+                    if (startDate !== "" && endDate !== ""){
+                        $("#select-form").submit();
+                    }
+                }
+                function CSVPOSTRequest(formId, downloadValue) {
+                    var startDate = $("#start_date").val();
+                    var endDate = $("#end_date").val();
+                    
+                    if (startDate !== "" && endDate !== ""){
+                        var form = $("#" + formId);
+                        var input = $("<input>")
+                        .attr("type", "hidden")
+                        .attr("name", "download")
+                        .val(downloadValue);
+                        form.append(input);
+                        form.submit();
+                    }
+                    
+                }
+                $("#start_date, #end_date").change(function() {
+                    event.preventDefault();
+                    sendPOSTRequest(); // 新しく作成した関数を呼び出す
+                });
+                $("#csv-btn").click(function() {
+                    event.preventDefault();
+                    CSVPOSTRequest("select-form", "download");
+                });
+            });
                 </script>
             {% endblock %}
         </body>

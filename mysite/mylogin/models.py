@@ -38,12 +38,14 @@ class Date(models.Model):
         return self.date
     
 class Subject(models.Model):
-    subject = models.CharField(max_length=50)#教科
-    period = models.ForeignKey(Period, on_delete=models.SET_NULL, null=True, max_length=50, related_name='related_period')#時限
-    hour = models.ForeignKey(Hour, on_delete=models.SET_NULL, null=True, max_length=50, related_name='related_hour')#前期後期
-    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='related_department')#CS・AD・EE・ME
-    date = models.ForeignKey(Date, on_delete=models.SET_NULL, null=True, max_length=50, related_name='related_date')#曜日
-    Number_of_classes =  models.IntegerField(null=True,blank=True,default=0)
+    subject = models.CharField(max_length=50, verbose_name="科目")#教科
+    period = models.ForeignKey(Period, on_delete=models.SET_NULL, null=True, max_length=50, related_name='related_period', verbose_name="期間")#期間
+    hour = models.ForeignKey(Hour, on_delete=models.SET_NULL, null=True, max_length=50, related_name='related_hour', verbose_name="時限")#時限
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='related_department',verbose_name="学科")#CS・AD・EE・ME
+    date = models.ForeignKey(Date, on_delete=models.SET_NULL, null=True, max_length=50, related_name='related_date', verbose_name="曜日")#曜日
+    class Meta:
+        verbose_name_plural = "科目管理"
+
     def __str__(self):
         return self.subject
 
