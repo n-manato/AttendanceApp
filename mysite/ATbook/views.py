@@ -66,6 +66,21 @@ def Students_list(request):
             else:
                 if data.first_half.type == '欠席':
                     dict_attend[data.student.full_name]['total'] += 1
+        if 'download' in request.POST:
+            data_list = []
+            for name, data in dict_attend.items():
+                for dates, values in data.items():
+                    if dates != 'total':
+                        for datas2, values2 in values.items():
+                            data_list.append({'Name': name, 'Date': dates, 'hour': datas2, 'first_half': values2['first_half'] if values2['first_half'] is not None else "None", 'latter_half': values2['latter_half'] if values2['latter_half'] is not None else "None",'Subject': selected_subject.subject})             
+                # リストからDataFrameを作成
+                df = pd.DataFrame(data_list)
+                # CSVファイルに変換してレスポンスを作成
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename="attendance_data.csv"'
+                # DataFrameをCSVに変換してHTTPレスポンスとして返す
+                df.to_csv(response, encoding='utf-8', index=False)
+                return response
 
     menu_items = [
         
@@ -108,7 +123,7 @@ def Teachers_list2(request):
             total_leave = 0
             total_absent = 0
             total_present = 0
-            next_date = today_date - timedelta(200)
+            next_date = today_date - timedelta(0)
             selected_start = next_date.strftime("%Y-%m-%d")
             selected_end = today_date.strftime("%Y-%m-%d")
             if request.method != "GET":

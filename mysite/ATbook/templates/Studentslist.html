@@ -101,13 +101,21 @@
                         </tbody>
                       </table>
                     </div>
-                    <div class="row justify-content-center mt-3">
+                    <form method="POST" id="select-form2">
+                      {% csrf_token %}
+                  <div class="row justify-content-center mt-3">
                       <div class="col-6">
-                        <button type="csv"
-                                id="csv-btn"
-                                class="btn btn-primary w-100"
-                                name="csv">CSVをダウンロード</button>
+                          
+                          <button type="submit"
+                          id="csv-btn"
+                          class="btn btn-primary w-100"
+                          name="download"
+                          value="csv">CSVをダウンロード</button>
+                          <input type="hidden" name="download" value="download">
+                      
                       </div>
+              </div>
+          </form>
                   </div>
                 </div>
               </div>
@@ -128,9 +136,29 @@
                         $("#select-form").submit();
                     }
                 }
+                function CSVPOSTRequest(formId, downloadValue) {
+                    var startDate = $("#start_date").val();
+                    var endDate = $("#end_date").val();
+                    
+                    if (startDate !== "" && endDate !== ""){
+                        var form = $("#" + formId);
+                        var input = $("<input>")
+                        .attr("type", "hidden")
+                        .attr("name", "download")
+                        .val(downloadValue);
+                        form.append(input);
+                        form.submit();
+                    }
+                    
+                }
                 $("#subject-select, #start_date, #end_date").change(function() {
                     event.preventDefault();
                     sendPOSTRequest(); // 新しく作成した関数を呼び出す
+                });
+                
+                $("#csv-btn").click(function() {
+                    event.preventDefault();
+                    CSVPOSTRequest("select-form", "download");
                 });
             });
         </script>
